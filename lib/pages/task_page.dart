@@ -2431,7 +2431,7 @@ class _TaskPageState extends State<TaskPage> {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.0),
                 child: Text(
-                  'Today',
+                  'To-do',
                   style: TextStyle(
                     fontSize: 36.0,
                     fontWeight: FontWeight.bold,
