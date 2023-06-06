@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
       //home: AuthPage(),
       // home: TimerScreen(),
       // home: ForgotPasswordScreen(),
+      // home: ProfilePage(),
       //home: TaskListPage(),
       //home: TaskPage(),
       // home: SignUpPage(),
