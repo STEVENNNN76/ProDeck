@@ -16,6 +16,8 @@ import 'package:prodeck/pages/forgotpass.dart';
 import 'package:prodeck/pages/task_page.dart';
 import 'package:prodeck/pages/profile_page.dart';
 
+import 'pages/mode_page.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -30,7 +32,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: MyHomePage(),
+      home: SplashScreen(),
+      //home: MyHomePage(),
+      //home: WorkPage(),
       //home: WelcomeScreen(),
       //home: LoginPage(),
       //home: AuthPage(),

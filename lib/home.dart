@@ -70,8 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                // builder: (context) => ProfileScreen(),
-                builder: (context) => const LogoutPage(),
+                builder: (context) => const ProfilePage(),
+                // builder: (context) => const LogoutPage(),
               ),
             );
           },
@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const TaskPage(),
+                    builder: (context) => TaskPage(),
                   ),
                 );
               },
@@ -196,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const TaskPage(),
+                    builder: (context) => TaskPage(),
                   ),
                 );
               },
@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const TaskPage(),
+                          builder: (context) => TaskPage(),
                         ),
                       );
                     },
@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TaskPage(),
+                        builder: (context) => TaskPage(),
                       ),
                     );
                   },
@@ -292,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TaskPage(),
+                        builder: (context) => TaskPage(),
                       ),
                     );
                   },
