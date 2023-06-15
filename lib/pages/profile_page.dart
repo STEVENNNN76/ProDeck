@@ -317,6 +317,7 @@ class DatabaseService {
 */
 
 //code 3
+/*
 import 'package:flutter/cupertino.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -447,6 +448,201 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void signUserOut() {
     FirebaseAuth.instance.signOut();
+  }
+}
+
+class DatabaseService {
+  final CollectionReference Hospital =
+      FirebaseFirestore.instance.collection('User');
+}
+*/
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:prodeck/pages/auth_page.dart';
+
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({Key? key}) : super(key: key);
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final User? user = FirebaseAuth.instance.currentUser;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _passwordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    openUserBox();
+    fetchUserData();
+  }
+
+  Future<void> openUserBox() async {
+    await Hive.initFlutter();
+    await Hive.openBox('user');
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      final snapshot = await DatabaseService().Hospital.doc(user?.uid).get();
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>?;
+        if (data != null) {
+          setState(() {
+            _nameController.text = data['name'];
+            _ageController.text = data['age'].toString();
+            _passwordController.text = data['password'];
+          });
+        }
+      }
+    } catch (error) {
+      print('Error fetching user data: $error');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Profile'),
+        leading: CupertinoButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Icon(CupertinoIcons.back),
+        ),
+      ),
+      child: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                buildUserDataForm(),
+                const SizedBox(height: 20),
+                CupertinoButton(
+                  onPressed: signUserOut,
+                  child: const Text('Logout'),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildUserDataForm() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          CupertinoTextField(
+            controller: _nameController,
+            placeholder: 'Name',
+            textInputAction: TextInputAction.next,
+            onEditingComplete: () {
+              FocusScope.of(context).nextFocus();
+            },
+          ),
+          const SizedBox(height: 16.0),
+          CupertinoTextField(
+            controller: _ageController,
+            placeholder: 'Age',
+            keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
+            onEditingComplete: () {
+              FocusScope.of(context).nextFocus();
+            },
+          ),
+          const SizedBox(height: 16.0),
+          CupertinoTextField(
+            readOnly: true,
+            controller: TextEditingController(text: user?.email ?? ''),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          Stack(
+            alignment: Alignment.centerRight,
+            children: [
+              CupertinoTextField(
+                controller: _passwordController,
+                readOnly: true,
+                obscureText: !_passwordVisible,
+                placeholder: 'Password',
+              ),
+              Positioned(
+                right: 8.0,
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    setState(() {
+                      _passwordVisible = !_passwordVisible;
+                    });
+                  },
+                  child: Icon(
+                    _passwordVisible
+                        ? CupertinoIcons.eye_slash
+                        : CupertinoIcons.eye,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16.0),
+          CupertinoButton.filled(
+            onPressed: saveUserData,
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> saveUserData() async {
+    String name = _nameController.text;
+    int age = int.tryParse(_ageController.text) ?? 0;
+    String password = _passwordController.text;
+
+    Map<String, dynamic> userData = {
+      'name': name,
+      'age': age,
+      'email': user?.email,
+      'password': password,
+    };
+
+    Box userBox = Hive.box('user');
+    userBox.put('name', name);
+    userBox.put('age', age);
+    userBox.put('email', user?.email);
+    userBox.put('password', password);
+
+    await DatabaseService().Hospital.doc(user?.uid).set(userData);
+
+    FocusScope.of(context).unfocus();
+  }
+
+  void signUserOut() {
+    FirebaseAuth.instance.signOut();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AuthPage(onTap: () {})),
+    );
   }
 }
 
