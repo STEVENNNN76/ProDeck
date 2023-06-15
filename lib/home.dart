@@ -870,7 +870,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => TaskPage(),
+                    builder: (context) => const TaskPage(),
                   ),
                 );
               },
@@ -930,7 +930,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => TaskPage(),
+                    builder: (context) => const TaskPage(),
                   ),
                 );
               },
@@ -973,7 +973,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ModePage(),
+                          builder: (context) =>
+                              const ModePage(), //name changed to focus
                         ),
                       );
                     },
@@ -998,26 +999,39 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ModePage(),
+                        builder: (context) => const ModePage(),
                       ),
                     );
                   },
                   child: Container(
-                    width: 150,
-                    height: 60,
+                    width: 170,
+                    height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(1.0),
+                      borderRadius: BorderRadius.circular(15.0),
                       color: Colors.white,
                     ),
-                    child: const Center(
-                      child: Text(
-                        'Card 1',
-                        style: TextStyle(
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.bold,
+                    child: const Row(
+                      children: [
+                        SizedBox(width: 5),
+                        Icon(
+                          CupertinoIcons.book_fill,
+                          color: Colors.orange,
                         ),
-                      ),
+                        SizedBox(width: 5),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              'Reading',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -1026,32 +1040,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TaskPage(),
+                        builder: (context) => const TaskPage(),
                       ),
                     );
                   },
                   child: Container(
-                    width: 150,
-                    height: 60,
+                    width: 170,
+                    height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(15.0),
                       color: Colors.white,
                     ),
-                    child: const Center(
-                      child: Text(
-                        'Card 2',
-                        style: TextStyle(
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.bold,
+                    child: const Row(
+                      children: [
+                        SizedBox(width: 5),
+                        Icon(
+                          IconData(0xe28d, fontFamily: 'MaterialIcons'),
+                          color: Colors.green,
                         ),
-                      ),
+                        SizedBox(width: 5),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              'Fitness',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ],
             ),
-            // const SizedBox(height: 20),
+// const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -1065,21 +1092,36 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Container(
-                    width: 150,
-                    height: 60,
+                    width: 170,
+                    height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(1.0),
+                      borderRadius: BorderRadius.circular(15.0),
                       color: Colors.white,
                     ),
-                    child: const Center(
-                      child: Text(
-                        'Card 3',
-                        style: TextStyle(
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.bold,
+                    child: const Row(
+                      children: [
+                        SizedBox(width: 5),
+                        Icon(
+                          IconData(0xf5ee,
+                              fontFamily: CupertinoIcons.iconFont,
+                              fontPackage: CupertinoIcons.iconFontPackage),
+                          color: Colors.blue,
                         ),
-                      ),
+                        SizedBox(width: 5),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              'Mindfulness',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -1088,26 +1130,41 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TaskPage(),
+                        builder: (context) => const TaskPage(),
                       ),
                     );
                   },
                   child: Container(
-                    width: 150,
-                    height: 60,
+                    width: 170,
+                    height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(15.0),
                       color: Colors.white,
                     ),
-                    child: const Center(
-                      child: Text(
-                        'Card 4',
-                        style: TextStyle(
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.bold,
+                    child: const Row(
+                      children: [
+                        SizedBox(width: 5),
+                        Icon(
+                          IconData(0xf625,
+                              fontFamily: CupertinoIcons.iconFont,
+                              fontPackage: CupertinoIcons.iconFontPackage),
+                          color: Colors.red,
                         ),
-                      ),
+                        SizedBox(width: 5),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              'Work',
+                              style: TextStyle(
+                                fontSize: 14.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
