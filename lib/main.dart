@@ -18,6 +18,7 @@ import 'package:prodeck/pages/forgotpass.dart';
 import 'package:prodeck/pages/task_page.dart';
 import 'package:prodeck/pages/profile_page.dart';
 
+import 'notifi.dart';
 import 'pages/mode_page.dart';
 
 void main() async {
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       home: SplashScreen(),
+      // home: NotificationButton(),
       //home: CalenderView(),
       //home: MyHomePage(),
       //home: WorkPage(),
