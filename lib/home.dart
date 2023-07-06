@@ -1270,7 +1270,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             child: const CircleAvatar(
-              radius: 28.0,
+              radius: 25.0,
             ),
           ),
         ],
@@ -1283,7 +1283,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
     return Padding(
-      padding: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.only(top: 15),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -1320,7 +1320,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(15.0),
               child: _buildDateText(),
             ),
             _buildDayOfWeekRow(),
@@ -1362,7 +1362,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1376,7 +1376,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     child: Container(
-                      width: 400,
+                      width: 390,
                       height: 130,
                       margin: const EdgeInsets.all(5.0),
                       decoration: BoxDecoration(
@@ -1444,10 +1444,10 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               child: Container(
                 width: 390,
-                height: 105,
-                margin: const EdgeInsets.all(20.0),
+                height: 100,
+                margin: const EdgeInsets.all(15.0),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15.0),
+                  borderRadius: BorderRadius.circular(20.0),
                   color: Colors.white,
                 ),
                 child: const Card(
@@ -1463,7 +1463,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 5),
+            // const SizedBox(height: 5),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Row(
@@ -1498,7 +1498,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -1512,7 +1512,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Container(
-                    width: 170,
+                    width: 160,
                     height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
@@ -1553,7 +1553,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Container(
-                    width: 170,
+                    width: 160,
                     height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
@@ -1600,7 +1600,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Container(
-                    width: 170,
+                    width: 160,
                     height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
@@ -1643,7 +1643,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Container(
-                    width: 170,
+                    width: 160,
                     height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
