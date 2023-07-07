@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:prodeck/home.dart';
 import 'package:prodeck/pages/auth_page.dart';
 import 'package:prodeck/signin.dart';
@@ -10,6 +11,7 @@ import 'package:prodeck/pages/my_home_page.dart';
 //import 'package:flutter/login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:prodeck/signup.dart';
+import 'Services/notifi_service.dart';
 import 'calender/calender_home.dart';
 import 'calender/calender_view.dart';
 import 'firebase_options.dart';
@@ -26,6 +28,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  WidgetsFlutterBinding.ensureInitialized();
+  NotificationService().initNotification();
   runApp(const MyApp());
 }
 
@@ -35,8 +39,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: SplashScreen(),
-      // home: NotificationButton(),
+      //home: SplashScreen(),
+      home: NotificationButton(
+        title: 'hi',
+      ),
       //home: CalenderView(),
       //home: MyHomePage(),
       //home: WorkPage(),
