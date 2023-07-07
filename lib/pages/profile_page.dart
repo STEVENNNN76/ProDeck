@@ -458,7 +458,7 @@ class DatabaseService {
 */
 
 // best working code
-/*
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -653,7 +653,10 @@ class DatabaseService {
   final CollectionReference Hospital =
       FirebaseFirestore.instance.collection('User');
 }
-*/
+
+
+//profile picture 
+/*
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -965,3 +968,4 @@ class DatabaseService {
   final CollectionReference Hospital =
       FirebaseFirestore.instance.collection('User');
 }
+*/
