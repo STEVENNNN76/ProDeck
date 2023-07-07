@@ -39,10 +39,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      //home: SplashScreen(),
-      home: NotificationButton(
-        title: 'hi',
-      ),
+      home: SplashScreen(),
       //home: CalenderView(),
       //home: MyHomePage(),
       //home: WorkPage(),
