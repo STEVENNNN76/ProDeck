@@ -1190,6 +1190,7 @@ import 'package:prodeck/pages/logout_page.dart';
 import 'package:prodeck/pages/task_page.dart';
 import 'package:prodeck/pages/activity_page.dart';
 
+import 'calender/calender.dart';
 import 'pages/mode_page.dart';
 import 'pages/selector_page.dart';
 
@@ -1229,8 +1230,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                const SelectorPage(), // Replace with your desired calendar page
+            builder: (context) => CalendarPage(),
           ),
         );
       },

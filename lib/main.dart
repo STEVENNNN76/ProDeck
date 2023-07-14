@@ -12,8 +12,6 @@ import 'package:prodeck/pages/my_home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:prodeck/signup.dart';
 import 'Services/notifi_service.dart';
-import 'calender/calender_home.dart';
-import 'calender/calender_view.dart';
 import 'firebase_options.dart';
 import 'package:prodeck/timer.dart';
 import 'package:prodeck/pages/forgotpass.dart';
