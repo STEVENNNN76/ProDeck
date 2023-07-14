@@ -1861,10 +1861,15 @@ import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prodeck/pages/task_page.dart';
+import 'package:cupertino_icons/cupertino_icons.dart';
 
 import '../Services/notifi_service.dart';
 
 class ActivityPage extends StatelessWidget {
+  static const IconData arrowtriangleRightFill = IconData(0xf569,
+      fontFamily: CupertinoIcons.iconFont,
+      fontPackage: CupertinoIcons.iconFontPackage);
+
   const ActivityPage({Key? key}) : super(key: key);
 
   @override
@@ -2024,7 +2029,18 @@ class ActivityPage extends StatelessWidget {
                                 const EdgeInsets.symmetric(horizontal: 20.0),
                             child: Card(
                               child: ListTile(
-                                title: Text(taskName),
+                                title: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(taskName),
+                                    const Icon(
+                                      arrowtriangleRightFill,
+                                      size: 25.0,
+                                      color: CupertinoColors.systemGrey,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
