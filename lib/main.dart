@@ -12,6 +12,8 @@ import 'package:prodeck/pages/my_home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:prodeck/signup.dart';
 import 'Services/notifi_service.dart';
+
+import 'Task/test2.dart';
 import 'firebase_options.dart';
 import 'package:prodeck/timer.dart';
 import 'package:prodeck/pages/forgotpass.dart';
@@ -38,6 +40,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       home: SplashScreen(),
+      //home: TaskList(),
+      //home: DetailsPage()
       //home: CalenderView(),
       //home: MyHomePage(),
       //home: WorkPage(),

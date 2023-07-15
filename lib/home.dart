@@ -1837,7 +1837,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const TaskPage(),
+                    builder: (context) => TaskList(),
                   ),
                 );
               },
@@ -1930,6 +1930,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 10.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -1938,7 +1939,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TaskPage(),
+                        builder: (context) => TaskList(),
                       ),
                     );
                   },
@@ -1956,10 +1957,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           CircleAvatar(
                             radius: 30,
-                            backgroundColor: Colors.grey[200],
-                            child: const Icon(
+                            backgroundColor: Colors.yellow[200],
+                            child: Icon(
                               CupertinoIcons.collections_solid,
-                              color: Colors.black,
+                              color: Colors.orangeAccent[200],
                               size: 40,
                             ),
                           ),
@@ -1982,7 +1983,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TaskPage(),
+                        builder: (context) => TaskList(),
                       ),
                     );
                   },
@@ -2000,10 +2001,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           CircleAvatar(
                             radius: 30,
-                            backgroundColor: Colors.grey[200],
+                            backgroundColor: Colors.cyan[200],
                             child: const Icon(
                               CupertinoIcons.graph_square_fill,
-                              color: Colors.black,
+                              color: Colors.white,
                               size: 40,
                             ),
                           ),
@@ -2023,8 +2024,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 15.0),
 
-            const SizedBox(height: 5),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Row(
@@ -2112,7 +2113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TaskPage(),
+                        builder: (context) => TaskList(),
                       ),
                     );
                   },
@@ -2163,7 +2164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TaskPage(),
+                        builder: (context) => TaskList(),
                       ),
                     );
                   },
@@ -2215,7 +2216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TaskPage(),
+                        builder: (context) => TaskList(),
                       ),
                     );
                   },
