@@ -5605,11 +5605,14 @@ class _DetailsPageState extends State<DetailsPage> {
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
 class TaskList extends StatelessWidget {
+  const TaskList({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -5629,9 +5632,8 @@ class TaskList extends StatelessWidget {
       ),
       body: Container(
         color: Colors.white, // Set the background color to white
-        padding: const EdgeInsets.all(20.0), // Add padding to cards
+        padding: const EdgeInsets.all(20.0), // Add padding to tasks
         child: StreamBuilder<QuerySnapshot>(
-          // Rest of the code remains the same
           stream: FirebaseFirestore.instance.collection('tasks').snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
@@ -5655,58 +5657,66 @@ class TaskList extends StatelessWidget {
                   final date = taskData['date'] as Timestamp?;
                   final bool isCompleted = taskData['completed'] ?? false;
 
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TaskPage(taskData: taskData),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      child: ListTile(
-                        leading: isCompleted
-                            ? IconButton(
-                                icon: const Icon(
-                                  CupertinoIcons.check_mark_circled_solid,
-                                  color: Colors.blue,
-                                  size: 30.0,
-                                ),
-                                onPressed: () {
-                                  // Mark task as not completed and update in Firestore and Hive
-                                  task.reference.update({'completed': false});
-                                  final box = Hive.box('tasks');
-                                  box.put(taskId,
-                                      {...taskData, 'completed': false});
-                                },
-                              )
-                            : IconButton(
-                                icon: const Icon(
-                                  CupertinoIcons.check_mark_circled,
-                                  color: Colors.black,
-                                  size: 30.0,
-                                ),
-                                onPressed: () {
-                                  // Mark task as completed and update in Firestore and Hive
-                                  task.reference.update({'completed': true});
-                                  final box = Hive.box('tasks');
-                                  box.put(
-                                      taskId, {...taskData, 'completed': true});
-                                },
+                  return Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TaskPage(taskData: taskData),
+                            ),
+                          );
+                          // Provide haptic feedback when the task name is pressed
+                          HapticFeedback.mediumImpact();
+                        },
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                // Toggle task completion state and update in Firestore and Hive
+                                final bool newCompletionState = !isCompleted;
+                                task.reference
+                                    .update({'completed': newCompletionState});
+                                final box = Hive.box('tasks');
+                                box.put(taskId, {
+                                  ...taskData,
+                                  'completed': newCompletionState
+                                });
+                                // Provide haptic feedback when the circle is pressed
+                                HapticFeedback.mediumImpact();
+                              },
+                              child: Icon(
+                                CupertinoIcons.largecircle_fill_circle,
+                                color: isCompleted ? Colors.blue : Colors.grey,
+                                size: 20.0,
                               ),
-                        title: Text(taskName ?? 'No Task Name'),
-                        trailing: date != null
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(DateFormat('yyyy-MM-dd')
-                                      .format(date.toDate())),
-                                ],
-                              )
-                            : null, // Hide subtitle if date is not set
+                            ),
+                            const SizedBox(width: 10.0),
+                            Expanded(
+                              child: Text(
+                                taskName ?? 'No Task Name',
+                                style: const TextStyle(fontSize: 16.0),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 10.0),
+                      const Row(
+                        children: [
+                          SizedBox(
+                              width: 30.0), // Add 15px space from the left edge
+                          Expanded(
+                            child: Divider(
+                              height: 15,
+                              thickness: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   );
                 }).toList(),
               ),
@@ -5724,6 +5734,8 @@ class TaskList extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (context) => const DetailsPage()),
               );
+              // Provide haptic feedback when the "New Task" button is pressed
+              HapticFeedback.mediumImpact();
             },
             child: Container(
               padding:
@@ -5732,8 +5744,8 @@ class TaskList extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    CupertinoIcons.add,
-                    color: Colors.blue,
+                    CupertinoIcons.add_circled_solid,
+                    color: Colors.blueAccent,
                     size: 30.0,
                   ),
                   SizedBox(width: 10.0),
@@ -6027,6 +6039,7 @@ class _TaskPageState extends State<TaskPage> {
   @override
   void initState() {
     super.initState();
+    _openHiveBox();
     _taskNameController =
         TextEditingController(text: widget.taskData['taskName']);
     _notesController = TextEditingController(text: widget.taskData['notes']);
@@ -6036,35 +6049,182 @@ class _TaskPageState extends State<TaskPage> {
         : null;
   }
 
+  void _openHiveBox() async {
+    await Hive.initFlutter();
+    await Hive.openBox('tasks');
+  }
+
   void _unfocus() {
     FocusScope.of(context).unfocus();
   }
 
-  void _saveToFirestore(
-      String taskName, String notes, DateTime? date, TimeOfDay? time) {
-    final firestore = FirebaseFirestore.instance;
-    final taskDocRef =
-        firestore.collection('tasks').doc(widget.taskData['taskId']);
+  String _formatSelectedDate(DateTime? date) {
+    if (date == null) return 'Today';
+    final String day = DateFormat('EEEE').format(date);
+    final String month = DateFormat('MMMM').format(date);
+    final String dayOfMonth = DateFormat('d').format(date);
+    final String year = DateFormat('y').format(date);
+    return '$day, $month $dayOfMonth, $year';
+  }
 
-    taskDocRef.update({
-      'taskName': taskName,
-      'notes': notes,
-      'date': date,
-      'time': time != null ? DateTime(0, 0, 0, time.hour, time.minute) : null,
+  String _formatSelectedTime(TimeOfDay? time) {
+    if (time == null) return 'No time set';
+    final String hour = time.hourOfPeriod.toString().padLeft(2, '0');
+    final String minute = time.minute.toString().padLeft(2, '0');
+    final String period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return '$hour:$minute $period';
+  }
+
+  String _generateTaskId(String taskName, DateTime date) {
+    final String dateString = DateFormat('yyyyMMddHHmmss').format(date);
+    return '${taskName.hashCode}-$dateString';
+  }
+
+  void _saveToFirestore(
+    String taskName,
+    String notes,
+    DateTime? date,
+    TimeOfDay? time,
+  ) {
+    final firestore = FirebaseFirestore.instance;
+    final taskId = _generateTaskId(taskName, date!);
+    final taskDocRef = firestore.collection('tasks').doc(taskId);
+
+    taskDocRef.get().then((docSnapshot) {
+      if (docSnapshot.exists) {
+        taskDocRef.update({
+          'taskName': taskName,
+          'notes': notes,
+          'date': date,
+          'time': time != null ? _timeOfDayToDateTime(time) : null,
+        });
+      } else {
+        taskDocRef.set({
+          'taskName': taskName,
+          'notes': notes,
+          'date': date,
+          'time': time != null ? _timeOfDayToDateTime(time) : null,
+        });
+      }
+    }).catchError((error) {
+      print('Error while checking/updating Firestore document: $error');
     });
   }
 
+  DateTime? _timeOfDayToDateTime(TimeOfDay time) {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day, time.hour, time.minute);
+  }
+
   void _saveToHive(
-      String taskName, String notes, DateTime? date, TimeOfDay? time) async {
+    String taskName,
+    String notes,
+    DateTime? date,
+    TimeOfDay? time,
+  ) async {
     final box = Hive.box('tasks');
-    final taskKey = widget
-        .taskData['taskId']; // Use the correct key for the unique identifier
-    box.put(taskKey, {
-      'taskName': taskName,
-      'notes': notes,
-      'date': date,
-      'time': time != null ? DateTime(0, 0, 0, time.hour, time.minute) : null,
-    });
+    final existingTask = box.values.firstWhere(
+      (task) =>
+          task['taskName'] == taskName &&
+          _dateEquals(task['date'], date) &&
+          _timeEquals(task['time'], time),
+      orElse: () => null,
+    );
+
+    if (existingTask != null) {
+      // If the task already exists, update it
+      final taskId = existingTask['taskId'];
+      box.put(taskId, {
+        'taskName': taskName,
+        'notes': notes,
+        'date': date,
+        'time': time != null ? _timeOfDayToDateTime(time) : null,
+      });
+    } else {
+      // If the task is new, generate a task ID and add it to Hive
+      final taskId = _generateTaskId(taskName, date!);
+      if (taskId != null && taskId is String) {
+        box.put(taskId, {
+          'taskName': taskName,
+          'notes': notes,
+          'date': date,
+          'time': time != null ? _timeOfDayToDateTime(time) : null,
+        });
+      } else {
+        print('Error: Invalid taskId');
+      }
+    }
+  }
+
+  bool _dateEquals(DateTime? dateTime1, DateTime? dateTime2) {
+    if (dateTime1 == null && dateTime2 == null) {
+      return true;
+    }
+    return dateTime1?.compareTo(dateTime2 ?? DateTime(0)) == 0;
+  }
+
+  bool _timeEquals(DateTime? dateTime, TimeOfDay? time) {
+    if (dateTime == null && time == null) {
+      return true;
+    }
+    if (dateTime == null || time == null) {
+      return false;
+    }
+    return dateTime.hour == time.hour && dateTime.minute == time.minute;
+  }
+
+  String _timeOfDayToString(TimeOfDay? time) {
+    if (time == null) return '';
+    return '${time.hour}:${time.minute}';
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: const Text('Delete Task'),
+          content: const Text('Are you sure you want to delete this task?'),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            CupertinoDialogAction(
+              child: const Text('Delete'),
+              isDestructiveAction: true,
+              onPressed: () {
+                final taskName = widget.taskData['taskName'];
+                final date = widget.taskData['date']
+                    ?.toDate(); // Convert Timestamp to DateTime if necessary
+                _deleteTask(taskName, date); // Pass both taskName and date
+                Navigator.pop(context);
+                Navigator.pop(
+                    context); // Pop twice to go back to the previous screen
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteTask(String taskName, DateTime date) {
+    final box = Hive.box('tasks');
+    final taskId = _generateTaskId(taskName, date);
+
+    if (box.containsKey(taskId)) {
+      box.delete(taskId);
+
+      // You may also want to delete the task from Firestore if it exists there
+      final firestore = FirebaseFirestore.instance;
+      final taskDocRef = firestore.collection('tasks').doc(taskId);
+      taskDocRef.delete();
+    } else {
+      print('Task with taskName not found in Hive: $taskName');
+    }
   }
 
   @override
@@ -6074,6 +6234,15 @@ class _TaskPageState extends State<TaskPage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Task Details'),
+          actions: [
+            GestureDetector(
+              onTap: _showDeleteConfirmationDialog,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Icon(CupertinoIcons.ellipsis),
+              ),
+            ),
+          ],
         ),
         body: CupertinoScrollbar(
           child: SingleChildScrollView(
@@ -6081,8 +6250,7 @@ class _TaskPageState extends State<TaskPage> {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                  const SizedBox(height: 40.0),
-                  // Task Name/Notes Card
+                  //const SizedBox(height: 10.0),
                   Card(
                     child: Column(
                       children: [
@@ -6091,9 +6259,6 @@ class _TaskPageState extends State<TaskPage> {
                           child: CupertinoTextField(
                             controller: _taskNameController,
                             placeholder: 'Task name',
-                            onTap: () {
-                              _taskNameController.clear();
-                            },
                           ),
                         ),
                         const Divider(),
@@ -6102,16 +6267,12 @@ class _TaskPageState extends State<TaskPage> {
                           child: CupertinoTextField(
                             controller: _notesController,
                             placeholder: 'Notes',
-                            onTap: () {
-                              _notesController.clear();
-                            },
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 30.0),
-                  // Date and Time Card
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -6141,6 +6302,9 @@ class _TaskPageState extends State<TaskPage> {
                                 onChanged: (val) {
                                   setState(() {
                                     _showDatePicker = val;
+                                    if (_showDatePicker && !_showTimePicker) {
+                                      _showTimePicker = true;
+                                    }
                                   });
                                 },
                               ),
@@ -6148,17 +6312,43 @@ class _TaskPageState extends State<TaskPage> {
                           ),
                         ),
                         if (_showDatePicker)
-                          Container(
-                            height: 200.0,
-                            child: CupertinoDatePicker(
-                              mode: CupertinoDatePickerMode.date,
-                              initialDateTime: _selectedDate,
-                              onDateTimeChanged: (val) {
-                                setState(() {
-                                  _selectedDate = val;
-                                });
-                              },
-                            ),
+                          Column(
+                            children: [
+                              const Divider(),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _showDatePicker = false;
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(15.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        _formatSelectedDate(_selectedDate),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: 200.0,
+                                child: CupertinoDatePicker(
+                                  mode: CupertinoDatePickerMode.date,
+                                  initialDateTime: _selectedDate,
+                                  onDateTimeChanged: (val) {
+                                    setState(() {
+                                      _selectedDate = val;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         const Divider(),
                         Padding(
@@ -6184,6 +6374,9 @@ class _TaskPageState extends State<TaskPage> {
                                 onChanged: (val) {
                                   setState(() {
                                     _showTimePicker = val;
+                                    if (!_showTimePicker && _showDatePicker) {
+                                      _showDatePicker = false;
+                                    }
                                   });
                                 },
                               ),
@@ -6191,27 +6384,52 @@ class _TaskPageState extends State<TaskPage> {
                           ),
                         ),
                         if (_showTimePicker)
-                          Container(
-                            height: 200.0,
-                            child: CupertinoTimerPicker(
-                              mode: CupertinoTimerPickerMode.hm,
-                              initialTimerDuration: _selectedTime != null
-                                  ? Duration(
-                                      hours: _selectedTime!.hour,
-                                      minutes: _selectedTime!.minute)
-                                  : Duration.zero,
-                              onTimerDurationChanged: (val) {
-                                setState(() {
-                                  _selectedTime = TimeOfDay.fromDateTime(
-                                      DateTime(0, 0, 0).add(val));
-                                });
-                              },
-                            ),
+                          Column(
+                            children: [
+                              const Divider(),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _showTimePicker = false;
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(15.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        _formatSelectedTime(_selectedTime),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: 200.0,
+                                child: CupertinoTimerPicker(
+                                  mode: CupertinoTimerPickerMode.hm,
+                                  initialTimerDuration: _selectedTime != null
+                                      ? Duration(
+                                          hours: _selectedTime!.hour,
+                                          minutes: _selectedTime!.minute)
+                                      : Duration.zero,
+                                  onTimerDurationChanged: (val) {
+                                    setState(() {
+                                      _selectedTime = TimeOfDay.fromDateTime(
+                                          DateTime(0, 0, 0).add(val));
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 20.0),
                   Card(
                     shape: RoundedRectangleBorder(
@@ -6267,7 +6485,6 @@ class _TaskPageState extends State<TaskPage> {
                       ],
                     ),
                   ),
-
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -6293,9 +6510,7 @@ class _TaskPageState extends State<TaskPage> {
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 40.0),
-                  // Save Button
+                  const SizedBox(height: 30.0),
                   CupertinoButton(
                     child: const Text('Save'),
                     onPressed: () {
@@ -6323,6 +6538,13 @@ class _TaskPageState extends State<TaskPage> {
       ),
     );
   }
+/*
+  @override
+  void dispose() {
+    Hive.close();
+    super.dispose();
+  }
+  */
 }
 
 class DetailsPage extends StatefulWidget {
