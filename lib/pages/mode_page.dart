@@ -1168,6 +1168,8 @@ class _ModePageState extends State<ModePage> {
 //best working
 
 //try
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity/connectivity.dart';
@@ -1640,7 +1642,6 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //const SizedBox(height: 20),
             Row(
               children: [
                 CupertinoButton(
@@ -1656,7 +1657,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            // const SizedBox(height: 20),
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(10.0),
@@ -1665,7 +1666,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black, // Change text color to black
+                    color: Colors.black,
                     decoration: TextDecoration.none,
                   ),
                 ),
@@ -1735,6 +1736,190 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                 CircleAvatar(backgroundColor: Colors.cyan, radius: 20),
               ],
             ),
+            const SizedBox(height: 10),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.piano,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.piano,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.sportscourt_fill,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.tickets_fill,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.train_style_two,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.cart_fill,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.chat_bubble_text_fill,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.create_solid,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.tickets_fill,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.train_style_two,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.piano,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.piano,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.sportscourt_fill,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.tickets_fill,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.train_style_two,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.piano,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.piano,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.sportscourt_fill,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.tickets_fill,
+                    color: Colors.grey,
+                  ),
+                ),
+                CircleAvatar(
+                  backgroundColor: Colors.black12,
+                  radius: 20,
+                  child: Icon(
+                    CupertinoIcons.train_style_two,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
             const Spacer(),
             Center(
               child: GestureDetector(
@@ -1743,8 +1928,8 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                 },
                 child: Card(
                   elevation: 0.1,
-                  color: const Color.fromARGB(255, 195, 195, 195)
-                      .withOpacity(0.1), // Light grey with opacity
+                  color:
+                      const Color.fromARGB(255, 195, 195, 195).withOpacity(0.1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),

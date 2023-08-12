@@ -1514,6 +1514,7 @@ class _MyHomePageState extends State<MyHomePage>
 */
 
 //code 7
+//best working
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -1640,6 +1641,10 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
+//try
+
+//do
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);

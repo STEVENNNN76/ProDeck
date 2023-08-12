@@ -1994,7 +1994,7 @@ class ActivityPage extends StatelessWidget {
                       Navigator.push(
                         context,
                         CupertinoPageRoute(
-                          builder: (context) => TaskPage(
+                          builder: (context) => const TaskPage(
                             taskData: {},
                           ),
                         ),
