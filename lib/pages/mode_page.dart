@@ -1168,6 +1168,7 @@ class _ModePageState extends State<ModePage> {
 //best working
 
 //try
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -1284,36 +1285,6 @@ class _ModePageState extends State<ModePage> {
     });
   }
 
-  void showDeleteConfirmationDialog(int index) {
-    showCupertinoModalPopup(
-      context: context,
-      builder: (BuildContext context) {
-        return CupertinoActionSheet(
-          actions: [
-            CupertinoActionSheetAction(
-              child: const Text('Delete'),
-              onPressed: () {
-                if (isOnline) {
-                  deleteModeFromFirestore(index);
-                } else {
-                  deleteModeFromHive(index);
-                }
-                Navigator.of(context).pop();
-              },
-              isDestructiveAction: true,
-            ),
-          ],
-          cancelButton: CupertinoActionSheetAction(
-            child: const Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        );
-      },
-    );
-  }
-
   void navigateToCreateFocusScreen(BuildContext context) {
     Navigator.push(
       context,
@@ -1323,6 +1294,7 @@ class _ModePageState extends State<ModePage> {
     );
   }
 
+/*
   Widget _buildPredefinedCard(int index) {
     late IconData icon;
     late Color color;
@@ -1392,39 +1364,142 @@ class _ModePageState extends State<ModePage> {
       ),
     );
   }
-
-  Widget _buildCreatedCard(int modeIndex) {
-    final modeText = modeTexts[modeIndex];
-    final textColor = Colors.white; // You can adjust the text color here
-    final modeColor = Colors.blue; // You can adjust the card color here
-
-    return GestureDetector(
-      onTap: () {
-        // Perform action when mode is tapped
+*/
+  Widget _buildPredefinedCard(int index) {
+    // Predefined modes
+    final predefinedModes = [
+      {
+        'icon': CupertinoIcons.book_fill,
+        'color': Colors.orange,
+        'text': 'Reading',
       },
-      onLongPress: () {
-        showDeleteConfirmationDialog(modeIndex);
+      {
+        'icon': const IconData(0xe28d, fontFamily: 'MaterialIcons'),
+        'color': Colors.green,
+        'text': 'Fitness',
       },
-      child: Container(
-        width: 110,
-        height: 40,
+      {
+        'icon': const IconData(0xf5ee,
+            fontFamily: CupertinoIcons.iconFont,
+            fontPackage: CupertinoIcons.iconFontPackage),
+        'color': Colors.blue,
+        'text': 'Mindfulness',
+      },
+      {
+        'icon': const IconData(0xf625,
+            fontFamily: CupertinoIcons.iconFont,
+            fontPackage: CupertinoIcons.iconFontPackage),
+        'color': Colors.red,
+        'text': 'Work',
+      },
+    ];
+
+    if (index < predefinedModes.length) {
+      final modeData = predefinedModes[index];
+      final icon = modeData['icon'] as IconData;
+      final color = modeData['color'] as Color;
+      final text = modeData['text'] as String;
+
+      return Container(
+        width: 175,
+        height: 75,
+        margin: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-          color: modeColor,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(15.0),
+          color: Colors.white,
         ),
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(10),
-        child: Center(
-          child: Text(
-            modeText,
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.bold,
+        child: Row(
+          children: [
+            const SizedBox(width: 5),
+            CircleAvatar(
+              backgroundColor: color.withOpacity(0.3),
+              child: Icon(
+                icon,
+                color: color,
+              ),
             ),
-          ),
+            const SizedBox(width: 5),
+            Expanded(
+              child: Center(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
-    );
+      );
+    } else {
+      // User-created modes from Firestore
+      final firebaseIndex = index - predefinedModes.length;
+      if (firebaseIndex < modeTexts.length) {
+        final modeText = modeTexts[firebaseIndex];
+
+        return StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('Focus')
+              .doc(modeText)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return CircularProgressIndicator(); // Loading indicator
+            }
+
+            final focusData = snapshot.data?.data() as Map<String, dynamic>;
+            if (focusData == null) {
+              return Container(); // Return an empty container if data doesn't exist
+            }
+
+            final icon = focusData['icon'] as IconData;
+            final color = Color(int.parse(focusData['color']));
+            final iconData = IconData(int.parse(focusData['iconData']),
+                fontFamily: 'MaterialIcons');
+
+            return Container(
+              width: 175,
+              height: 75,
+              margin: const EdgeInsets.all(10.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15.0),
+                color: Colors.white,
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 5),
+                  CircleAvatar(
+                    backgroundColor: color.withOpacity(0.3),
+                    child: Icon(
+                      iconData,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        modeText,
+                        style: TextStyle(
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      } else {
+        return Container(); // Return an empty container if index is out of range
+      }
+    }
   }
 
   @override
@@ -1495,7 +1570,7 @@ class _ModePageState extends State<ModePage> {
                       return _buildPredefinedCard(index);
                     } else {
                       final modeIndex = index - 4;
-                      return _buildCreatedCard(modeIndex);
+                      //return _buildCreatedCard(modeIndex);
                     }
                   },
                 ),
@@ -1607,6 +1682,7 @@ class CreateFocusScreen extends StatelessWidget {
   }
 }
 
+/*
 class CustomFocusScreen extends StatefulWidget {
   const CustomFocusScreen({Key? key}) : super(key: key);
 
@@ -1752,7 +1828,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.piano,
+                    CupertinoIcons.slider_horizontal_3,
                     color: Colors.grey,
                   ),
                 ),
@@ -1814,7 +1890,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.tickets_fill,
+                    CupertinoIcons.creditcard_fill,
                     color: Colors.grey,
                   ),
                 ),
@@ -1822,7 +1898,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.train_style_two,
+                    CupertinoIcons.device_laptop,
                     color: Colors.grey,
                   ),
                 ),
@@ -1836,7 +1912,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.piano,
+                    CupertinoIcons.airplane,
                     color: Colors.grey,
                   ),
                 ),
@@ -1844,7 +1920,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.piano,
+                    CupertinoIcons.game_controller_solid,
                     color: Colors.grey,
                   ),
                 ),
@@ -1860,7 +1936,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.tickets_fill,
+                    CupertinoIcons.recordingtape,
                     color: Colors.grey,
                   ),
                 ),
@@ -1868,7 +1944,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.train_style_two,
+                    CupertinoIcons.delete_simple,
                     color: Colors.grey,
                   ),
                 ),
@@ -1882,7 +1958,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.piano,
+                    CupertinoIcons.money_yen,
                     color: Colors.grey,
                   ),
                 ),
@@ -1890,7 +1966,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.piano,
+                    CupertinoIcons.ellipses_bubble,
                     color: Colors.grey,
                   ),
                 ),
@@ -1898,7 +1974,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.sportscourt_fill,
+                    CupertinoIcons.badge_plus_radiowaves_right,
                     color: Colors.grey,
                   ),
                 ),
@@ -1906,7 +1982,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.tickets_fill,
+                    CupertinoIcons.xmark_octagon,
                     color: Colors.grey,
                   ),
                 ),
@@ -1914,7 +1990,7 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
                   backgroundColor: Colors.black12,
                   radius: 20,
                   child: Icon(
-                    CupertinoIcons.train_style_two,
+                    CupertinoIcons.waveform_path,
                     color: Colors.grey,
                   ),
                 ),
@@ -1950,6 +2026,1027 @@ class _CustomFocusScreenState extends State<CustomFocusScreen> {
             ),
             const SizedBox(height: 20),
           ],
+        ),
+      ),
+    );
+  }
+}
+*/
+//works try
+
+/*
+class CustomFocusScreen extends StatefulWidget {
+  const CustomFocusScreen({Key? key}) : super(key: key);
+
+  @override
+  _CustomFocusScreenState createState() => _CustomFocusScreenState();
+}
+
+class _CustomFocusScreenState extends State<CustomFocusScreen> {
+  final TextEditingController _textEditingController = TextEditingController();
+  bool isEditing = false;
+  Color? selectedColor;
+  IconData? selectedIcon;
+  Color initialSelectedColor = Colors.blue;
+  IconData initialSelectedIcon = CupertinoIcons.piano;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedColor = initialSelectedColor;
+    selectedIcon = initialSelectedIcon;
+    _textEditingController.addListener(() {
+      setState(() {
+        isEditing = _textEditingController.text.isNotEmpty;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CupertinoButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Row(
+                      children: [
+                        Icon(CupertinoIcons.left_chevron),
+                        Text('Back'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text(
+                    'Name Your Focus',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ),
+              // Selected icon with color above text card
+              SizedBox(height: 20),
+              Center(
+                child: selectedIcon != null
+                    ? CircleAvatar(
+                        backgroundColor: selectedColor,
+                        radius: 20,
+                        child: Icon(
+                          selectedIcon,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Container(),
+              ),
+              const SizedBox(height: 80),
+
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isEditing = true;
+                    });
+                  },
+                  child: Card(
+                    elevation: 0.1,
+                    color: Colors.grey.withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Container(
+                      width: 300,
+                      height: 50,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: isEditing
+                          ? CupertinoTextField(
+                              controller: _textEditingController,
+                              placeholder: '',
+                              autofocus: true,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.transparent,
+                                ),
+                              ),
+                            )
+                          : const Center(
+                              child: Text(
+                                'Name',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 50),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CircleAvatar(backgroundColor: Colors.blue, radius: 20),
+                  CircleAvatar(backgroundColor: Colors.brown, radius: 20),
+                  CircleAvatar(backgroundColor: Colors.grey, radius: 20),
+                  CircleAvatar(backgroundColor: Colors.green, radius: 20),
+                  CircleAvatar(backgroundColor: Colors.purple, radius: 20),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CircleAvatar(backgroundColor: Colors.orange, radius: 20),
+                  CircleAvatar(backgroundColor: Colors.red, radius: 20),
+                  CircleAvatar(backgroundColor: Colors.pink, radius: 20),
+                  CircleAvatar(backgroundColor: Colors.redAccent, radius: 20),
+                  CircleAvatar(backgroundColor: Colors.cyan, radius: 20),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.piano,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.slider_horizontal_3,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.sportscourt_fill,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.tickets_fill,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.train_style_two,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.cart_fill,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.chat_bubble_text_fill,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.create_solid,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.creditcard_fill,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.device_laptop,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.airplane,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.game_controller_solid,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.sportscourt_fill,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.recordingtape,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.delete_simple,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.money_yen,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.ellipses_bubble,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.badge_plus_radiowaves_right,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.xmark_octagon,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Colors.black12,
+                    radius: 20,
+                    child: Icon(
+                      CupertinoIcons.waveform_path,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 50),
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    // Handle the "Create" action
+                  },
+                  child: Card(
+                    elevation: 0.1,
+                    color: const Color.fromARGB(255, 195, 195, 195)
+                        .withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Container(
+                      width: 200,
+                      height: 50,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Create',
+                        style: TextStyle(
+                          color: Colors.black,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+*/
+
+//new code
+
+class CustomFocusScreen extends StatefulWidget {
+  const CustomFocusScreen({Key? key}) : super(key: key);
+
+  @override
+  _CustomFocusScreenState createState() => _CustomFocusScreenState();
+}
+
+class _CustomFocusScreenState extends State<CustomFocusScreen> {
+  final TextEditingController _textEditingController = TextEditingController();
+  bool isEditing = false;
+  Color? selectedColor;
+  IconData? selectedIcon;
+  Color initialSelectedColor = Colors.blue;
+  IconData initialSelectedIcon = CupertinoIcons.piano;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedColor = initialSelectedColor;
+    selectedIcon = initialSelectedIcon;
+    _textEditingController.addListener(() {
+      setState(() {
+        isEditing = _textEditingController.text.isNotEmpty;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
+  }
+
+  void changeSelectedIcon(IconData newIcon) {
+    setState(() {
+      selectedIcon = newIcon;
+    });
+  }
+
+  void changeSelectedColor(Color newColor) {
+    setState(() {
+      selectedColor = newColor;
+    });
+  }
+
+  //saving data
+  Future<void> saveFocusData() async {
+    // Get the focus name from the text field
+    String focusName = _textEditingController.text;
+
+    // Save data to Firebase
+    await FirebaseFirestore.instance.collection('focus').add({
+      'name': focusName,
+      'icon': selectedIcon.toString(),
+      'color': selectedColor.toString(),
+    });
+
+    // Save data to Hive
+    final focusBox = await Hive.openBox('focusBox');
+    final focusId = await focusBox.add({
+      'name': focusName,
+      'icon': selectedIcon.toString(),
+      'color': selectedColor.toString(),
+    });
+
+    print('Focus data saved with ID: $focusId');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CupertinoButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Row(
+                      children: [
+                        Icon(CupertinoIcons.left_chevron),
+                        Text('Back'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text(
+                    'Name Your Focus',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ),
+              // const SizedBox(height: 100),
+              // Selected icon with color above text card
+              const SizedBox(height: 40),
+              Center(
+                child: selectedIcon != null
+                    ? CircleAvatar(
+                        backgroundColor: selectedColor,
+                        radius: 30,
+                        child: Icon(
+                          selectedIcon,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Container(),
+              ),
+              const SizedBox(height: 50),
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isEditing = true;
+                    });
+                  },
+                  child: Card(
+                    elevation: 0.1,
+                    color: Colors.grey.withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Container(
+                      width: 300,
+                      height: 50,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: isEditing
+                          ? CupertinoTextField(
+                              controller: _textEditingController,
+                              placeholder: '',
+                              autofocus: true,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.transparent,
+                                ),
+                              ),
+                            )
+                          : const Center(
+                              child: Text(
+                                'Name',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 50),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.blue);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.blue, radius: 20),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.brown);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.brown, radius: 20),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.grey);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.grey, radius: 20),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.green);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.green, radius: 20),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.purple);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.purple, radius: 20),
+                  ),
+
+                  // Add more color options here
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.orange);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.orange, radius: 20),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.red);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.red, radius: 20),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.pink);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.pink, radius: 20),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.redAccent);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.redAccent, radius: 20),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedColor(Colors.cyan);
+                    },
+                    child: const CircleAvatar(
+                        backgroundColor: Colors.cyan, radius: 20),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+              //row 1 icons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(CupertinoIcons.piano);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.piano,
+                        color: selectedIcon == CupertinoIcons.piano
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(CupertinoIcons.slider_horizontal_3);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.slider_horizontal_3,
+                        color:
+                            selectedIcon == CupertinoIcons.slider_horizontal_3
+                                ? Colors.white
+                                : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.sportscourt_fill,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.sportscourt_fill,
+                        color: selectedIcon == CupertinoIcons.sportscourt_fill
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.tickets_fill,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.tickets_fill,
+                        color: selectedIcon == CupertinoIcons.tickets_fill
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.train_style_two,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.train_style_two,
+                        color: selectedIcon == CupertinoIcons.train_style_two
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  // Add more icon options here
+                ],
+              ),
+              // ... more rows of CircleAvatar widgets ...
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(CupertinoIcons.cart_fill);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.cart_fill,
+                        color: selectedIcon == CupertinoIcons.cart_fill
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(CupertinoIcons.chat_bubble_text_fill);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.chat_bubble_text_fill,
+                        color:
+                            selectedIcon == CupertinoIcons.chat_bubble_text_fill
+                                ? Colors.white
+                                : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.create_solid,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.create_solid,
+                        color: selectedIcon == CupertinoIcons.create_solid
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.creditcard_fill,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.creditcard_fill,
+                        color: selectedIcon == CupertinoIcons.creditcard_fill
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.device_laptop,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.device_laptop,
+                        color: selectedIcon == CupertinoIcons.device_laptop
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  // Add more icon options here
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(CupertinoIcons.airplane);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.airplane,
+                        color: selectedIcon == CupertinoIcons.airplane
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(CupertinoIcons.game_controller_solid);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.game_controller_solid,
+                        color:
+                            selectedIcon == CupertinoIcons.game_controller_solid
+                                ? Colors.white
+                                : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.recordingtape,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.recordingtape,
+                        color: selectedIcon == CupertinoIcons.recordingtape
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.delete_simple,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.delete_simple,
+                        color: selectedIcon == CupertinoIcons.delete_simple
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.money_yen,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.money_yen,
+                        color: selectedIcon == CupertinoIcons.money_yen
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  // Add more icon options here
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(CupertinoIcons.ellipses_bubble);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.ellipses_bubble,
+                        color: selectedIcon == CupertinoIcons.ellipses_bubble
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                          CupertinoIcons.badge_plus_radiowaves_right);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.badge_plus_radiowaves_right,
+                        color: selectedIcon ==
+                                CupertinoIcons.badge_plus_radiowaves_right
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.xmark_octagon,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.xmark_octagon,
+                        color: selectedIcon == CupertinoIcons.xmark_octagon
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.waveform_path,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.waveform_path,
+                        color: selectedIcon == CupertinoIcons.waveform_path
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      changeSelectedIcon(
+                        CupertinoIcons.forward,
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black12,
+                      radius: 20,
+                      child: Icon(
+                        CupertinoIcons.forward,
+                        color: selectedIcon == CupertinoIcons.forward
+                            ? Colors.white
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                  // Add more icon options here
+                ],
+              ),
+              const SizedBox(height: 60),
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    saveFocusData();
+                    Navigator.pop(context);
+                  },
+                  child: Card(
+                    elevation: 0.1,
+                    color: const Color.fromARGB(255, 195, 195, 195)
+                        .withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Container(
+                      width: 200,
+                      height: 50,
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Create',
+                        style: TextStyle(
+                          color: Colors.black,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

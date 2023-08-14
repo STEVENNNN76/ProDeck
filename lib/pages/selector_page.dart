@@ -35,28 +35,6 @@ class SelectorPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   children: [
                     SelectorCard(
-                      text: 'Profile',
-                      icon: CupertinoIcons.person,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                              builder: (context) => const ProfilePage()),
-                        );
-                      },
-                    ),
-                    SelectorCard(
-                      text: 'Notifications',
-                      icon: CupertinoIcons.bell,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                              builder: (context) => const NotificationsPage()),
-                        );
-                      },
-                    ),
-                    SelectorCard(
                       text: 'Settings',
                       icon: CupertinoIcons.settings,
                       onTap: () {

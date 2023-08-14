@@ -2,84 +2,106 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-
-class StatisticsPage extends StatelessWidget {
+class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});
+
+  @override
+  _StatisticsPageState createState() => _StatisticsPageState();
+}
+
+class _StatisticsPageState extends State<StatisticsPage> {
+  String selectedCategory = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 40), // Adjust the spacing as needed
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                CupertinoButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Icon(CupertinoIcons.back),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Statistics',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text(
-              'Focus',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const Expanded(
-            child: Center(
-              child: Wrap(
-                spacing: 16,
-                runSpacing: 16,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 70, left: 0, right: 16),
+              child: Row(
                 children: [
-                  ChartLegend('Fitness', Colors.green),
-                  ChartLegend('Reading', Colors.orange),
-                  ChartLegend('Work', Colors.red),
-                  ChartLegend('Mindfulness', Colors.blue),
+                  CupertinoButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(
+                      CupertinoIcons.back,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
                 ],
               ),
             ),
-          ),
-        ],
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Focus',
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: SfCircularChart(
+                  legend: Legend(isVisible: false),
+                  series: <CircularSeries>[
+                    RadialBarSeries<ChartData, String>(
+                      dataSource: <ChartData>[
+                        ChartData('Fitness', 30, Colors.green),
+                        ChartData('Reading', 25, Colors.orange),
+                        ChartData('Work', 20, Colors.red),
+                        ChartData('Mindfulness', 15, Colors.blue),
+                      ],
+                      xValueMapper: (ChartData data, _) => data.category,
+                      yValueMapper: (ChartData data, _) => data.value,
+                      pointColorMapper: (ChartData data, _) => data.color,
+                      maximumValue: 50,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Stacked Line Chart
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.all(50.0),
+                child: SfCartesianChart(
+                  primaryXAxis: CategoryAxis(),
+                  series: <ChartSeries>[
+                    StackedLineSeries<ChartData, String>(
+                      dataSource: <ChartData>[
+                        ChartData('Fitness', 30, Colors.green),
+                        ChartData('Reading', 25, Colors.orange),
+                        ChartData('Work', 20, Colors.red),
+                        ChartData('Mindfulness', 15, Colors.blue),
+                      ],
+                      xValueMapper: (ChartData data, _) => data.category,
+                      yValueMapper: (ChartData data, _) => data.value,
+                      color: Colors.transparent,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class ChartLegend extends StatelessWidget {
-  final String text;
+class ChartData {
+  final String category;
+  final double value;
   final Color color;
 
-  const ChartLegend(this.text, this.color, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.4,
-      child: Row(
-        children: [
-          Container(
-            width: 20,
-            height: 20,
-            color: color,
-          ),
-          const SizedBox(width: 8),
-          Text(text),
-        ],
-      ),
-    );
-  }
+  ChartData(this.category, this.value, this.color);
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:prodeck/Hive%20Drop/drop_task.dart';
 import 'package:prodeck/home.dart';
 import 'package:prodeck/pages/auth_page.dart';
 import 'package:prodeck/signin.dart';
@@ -11,6 +12,7 @@ import 'package:prodeck/pages/my_home_page.dart';
 //import 'package:flutter/login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:prodeck/signup.dart';
+import 'Hive Drop/box.dart';
 import 'Services/notifi_service.dart';
 
 import 'Task/test2.dart';
@@ -22,6 +24,7 @@ import 'package:prodeck/pages/task_page.dart';
 import 'package:prodeck/pages/profile_page.dart';
 
 import 'notifi.dart';
+import 'pages/Statistics_page.dart';
 import 'pages/mode_page.dart';
 
 void main() async {
@@ -40,9 +43,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: StopwatchApp(),
+      //home: StopwatchApp(),
+      // home: StatisticsPage(),
       //home: SplashScreen(),
-      //home: TaskList(),
+      //home: DeleteBoxesPage(),
+      home: TaskList(),
       //home: DetailsPage()
       //home: CalenderView(),
       //home: MyHomePage(),
@@ -50,10 +55,10 @@ class MyApp extends StatelessWidget {
       //home: WelcomeScreen(),
       //home: LoginPage(),
       //home: AuthPage(),
-      // home: TimerScreen(),
+      //home: TimerScreen(),
       // home: ForgotPasswordScreen(),
       // home: ProfilePage(),
-      //home: TaskListPage(),
+      // home: TaskListPage(),
       //home: TaskPage(),
       // home: SignUpPage(),
       //home: ForgotPass(),

@@ -2665,7 +2665,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Container(
-                    width: 175,
+                    width: 160,
                     height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
@@ -2709,7 +2709,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Container(
-                    width: 175,
+                    width: 160,
                     height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
@@ -2760,7 +2760,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Container(
-                    width: 175,
+                    width: 160,
                     height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
@@ -2812,7 +2812,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Container(
-                    width: 175,
+                    width: 160,
                     height: 75,
                     margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(

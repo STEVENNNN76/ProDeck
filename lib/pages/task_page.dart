@@ -6538,13 +6538,6 @@ class _TaskPageState extends State<TaskPage> {
       ),
     );
   }
-/*
-  @override
-  void dispose() {
-    Hive.close();
-    super.dispose();
-  }
-  */
 }
 
 class DetailsPage extends StatefulWidget {
