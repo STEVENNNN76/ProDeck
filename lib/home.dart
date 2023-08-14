@@ -2288,6 +2288,7 @@ import 'package:prodeck/pages/task_page.dart';
 import 'package:prodeck/pages/activity_page.dart';
 
 import 'calender/calender.dart';
+import 'pages/Statistics_page.dart';
 import 'pages/mode_page.dart';
 import 'pages/selector_page.dart';
 
@@ -2573,7 +2574,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TaskList(),
+                        builder: (context) => StatisticsPage(),
                       ),
                     );
                   },

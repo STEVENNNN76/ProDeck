@@ -59,6 +59,8 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSPhotoLibraryUsageDescription</key>
-   <string>Accessing photo library for profile picture selection</string>
+	<string>Accessing photo library for profile picture selection</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 </dict>
 </plist>

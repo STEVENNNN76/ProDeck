@@ -9,9 +9,8 @@ import WidgetKit
 import SwiftUI
 
 @main
-struct StopWatchDIWidgetBundle: WidgetBundle {
+struct StopwatchDIWidgetBundle: WidgetBundle {
     var body: some Widget {
-        StopWatchDIWidget()
-        StopWatchDIWidgetLiveActivity()
+        StopwatchDIWidgetLiveActivity()
     }
 }

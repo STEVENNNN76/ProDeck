@@ -14,6 +14,7 @@ import 'package:prodeck/signup.dart';
 import 'Services/notifi_service.dart';
 
 import 'Task/test2.dart';
+import 'dynamic/dynamic.dart';
 import 'firebase_options.dart';
 import 'package:prodeck/timer.dart';
 import 'package:prodeck/pages/forgotpass.dart';
@@ -39,7 +40,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: SplashScreen(),
+      home: StopwatchApp(),
+      //home: SplashScreen(),
       //home: TaskList(),
       //home: DetailsPage()
       //home: CalenderView(),
