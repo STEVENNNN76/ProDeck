@@ -1198,6 +1198,7 @@ class _ModePageState extends State<ModePage> {
     super.initState();
     initializeHive();
     initializeConnectivity();
+    syncModesWithFirestore(); // Call syncModesWithFirestore here
   }
 
   @override
@@ -1245,24 +1246,31 @@ class _ModePageState extends State<ModePage> {
     });
   }
 
-  void syncModesWithFirestore() {
-    FirebaseFirestore.instance
-        .collection('Focus')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
+  Future<void> syncModesWithFirestore() async {
+    print("Fetching Firestore data...");
+
+    try {
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection('Focus').get();
+
       final List<String> fetchedModeTexts = [];
       querySnapshot.docs.forEach((doc) {
-        final text = doc['text'];
+        final text = doc['name'];
         fetchedModeTexts.add(text);
         if (!modeTexts.contains(text)) {
           addModeToHive(text);
         }
       });
 
+      print("Fetched Mode Texts: $fetchedModeTexts");
+      print("Existing Mode Texts: $modeTexts");
+
       setState(() {
         modeTexts = fetchedModeTexts;
       });
-    });
+    } catch (error) {
+      print("Error fetching Firestore data: $error");
+    }
   }
 
   void deleteModeFromFirestore(int index) {
@@ -1294,77 +1302,33 @@ class _ModePageState extends State<ModePage> {
     );
   }
 
-/*
-  Widget _buildPredefinedCard(int index) {
-    late IconData icon;
-    late Color color;
-    late String text;
-
-    switch (index) {
-      case 0:
-        icon = CupertinoIcons.book_fill;
-        color = Colors.orange;
-        text = 'Reading';
-        break;
-      case 1:
-        icon = const IconData(0xe28d, fontFamily: 'MaterialIcons');
-        color = Colors.green;
-        text = 'Fitness';
-        break;
-      case 2:
-        icon = const IconData(0xf5ee,
-            fontFamily: CupertinoIcons.iconFont,
-            fontPackage: CupertinoIcons.iconFontPackage);
-        color = Colors.blue;
-        text = 'Mindfulness';
-        break;
-      case 3:
-        icon = const IconData(0xf625,
-            fontFamily: CupertinoIcons.iconFont,
-            fontPackage: CupertinoIcons.iconFontPackage);
-        color = Colors.red;
-        text = 'Work';
-        break;
-      default:
-        return Container();
-    }
-
-    return Container(
-      width: 175,
-      height: 75,
-      margin: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15.0),
-        color: Colors.white,
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 5),
-          CircleAvatar(
-            backgroundColor: color.withOpacity(0.3),
-            child: Icon(
-              icon,
-              color: color,
-            ),
-          ),
-          const SizedBox(width: 5),
-          Expanded(
-            child: Center(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-*/
+  // Define the predefinedModes list
+  final predefinedModes = [
+    {
+      'icon': CupertinoIcons.book_fill,
+      'color': Colors.orange,
+      'text': 'Reading',
+    },
+    {
+      'icon': const IconData(0xe28d, fontFamily: 'MaterialIcons'),
+      'color': Colors.green,
+      'text': 'Fitness',
+    },
+    {
+      'icon': const IconData(0xf5ee,
+          fontFamily: CupertinoIcons.iconFont,
+          fontPackage: CupertinoIcons.iconFontPackage),
+      'color': Colors.blue,
+      'text': 'Mindfulness',
+    },
+    {
+      'icon': const IconData(0xf625,
+          fontFamily: CupertinoIcons.iconFont,
+          fontPackage: CupertinoIcons.iconFontPackage),
+      'color': Colors.red,
+      'text': 'Work',
+    },
+  ];
   Widget _buildPredefinedCard(int index) {
     // Predefined modes
     final predefinedModes = [
@@ -1502,6 +1466,7 @@ class _ModePageState extends State<ModePage> {
     }
   }
 
+//try create cards
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1682,6 +1647,7 @@ class CreateFocusScreen extends StatelessWidget {
   }
 }
 
+//end of test
 /*
 class CustomFocusScreen extends StatefulWidget {
   const CustomFocusScreen({Key? key}) : super(key: key);

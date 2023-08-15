@@ -811,7 +811,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       fillColor: Colors.white,
                       filled: true,
-                      hintText: "Username",
+                      hintText: "E-mail",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

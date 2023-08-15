@@ -5603,6 +5603,7 @@ class _DetailsPageState extends State<DetailsPage> {
 //code 17
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_cupertino/dropdown_cupertino.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6029,9 +6030,39 @@ class TaskPage extends StatefulWidget {
 class _TaskPageState extends State<TaskPage> {
   bool _showDatePicker = false;
   bool _showTimePicker = false;
+  bool _showFocusPicker = false;
 
   late TextEditingController _taskNameController;
   late TextEditingController _notesController;
+
+  FocusOption _selectedFocus = FocusOption.none;
+  ReminderOption _selectedReminder = ReminderOption.never;
+
+  bool _showReminderPicker = false; // Added variable
+
+  List<String> _reminderOptions = [
+    'Never',
+    '5 minutes before',
+    '15 minutes before',
+    '30 minutes before',
+    '1 hour before',
+  ];
+
+  Map<String, String> _reminderMap = {
+    'Never': 'Never',
+    '5 minutes before': '5 min before',
+    '15 minutes before': '15 min before',
+    '30 minutes before': '30 min before',
+    '1 hour before': '1 hour before',
+  };
+
+  List<String> _focusOptions = [
+    'None',
+    'Reading',
+    'Fitness',
+    'Work',
+    'Mindfulness',
+  ];
 
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
@@ -6087,28 +6118,37 @@ class _TaskPageState extends State<TaskPage> {
     TimeOfDay? time,
   ) {
     final firestore = FirebaseFirestore.instance;
-    final taskId = _generateTaskId(taskName, date!);
-    final taskDocRef = firestore.collection('tasks').doc(taskId);
 
-    taskDocRef.get().then((docSnapshot) {
-      if (docSnapshot.exists) {
-        taskDocRef.update({
-          'taskName': taskName,
-          'notes': notes,
-          'date': date,
-          'time': time != null ? _timeOfDayToDateTime(time) : null,
-        });
-      } else {
-        taskDocRef.set({
-          'taskName': taskName,
-          'notes': notes,
-          'date': date,
-          'time': time != null ? _timeOfDayToDateTime(time) : null,
-        });
-      }
-    }).catchError((error) {
-      print('Error while checking/updating Firestore document: $error');
-    });
+    if (date != null) {
+      final taskId = _generateTaskId(taskName, date);
+      final taskDocRef = firestore.collection('tasks').doc(taskId);
+
+      taskDocRef.get().then((docSnapshot) {
+        if (docSnapshot.exists) {
+          taskDocRef.update({
+            'taskName': taskName,
+            'notes': notes,
+            'date': date,
+            'time': time != null ? _timeOfDayToDateTime(time) : null,
+            'reminder': _selectedReminder.toString(),
+            'focus': _selectedFocus.toString(),
+          });
+        } else {
+          taskDocRef.set({
+            'taskName': taskName,
+            'notes': notes,
+            'date': date,
+            'time': time != null ? _timeOfDayToDateTime(time) : null,
+            'reminder': _selectedReminder.toString(),
+            'focus': _selectedFocus.toString(),
+          });
+        }
+      }).catchError((error) {
+        print('Error while checking/updating Firestore document: $error');
+      });
+    } else {
+      print('Error: Date parameter is null.');
+    }
   }
 
   DateTime? _timeOfDayToDateTime(TimeOfDay time) {
@@ -6142,17 +6182,6 @@ class _TaskPageState extends State<TaskPage> {
       });
     } else {
       // If the task is new, generate a task ID and add it to Hive
-      final taskId = _generateTaskId(taskName, date!);
-      if (taskId != null && taskId is String) {
-        box.put(taskId, {
-          'taskName': taskName,
-          'notes': notes,
-          'date': date,
-          'time': time != null ? _timeOfDayToDateTime(time) : null,
-        });
-      } else {
-        print('Error: Invalid taskId');
-      }
     }
   }
 
@@ -6197,9 +6226,9 @@ class _TaskPageState extends State<TaskPage> {
               isDestructiveAction: true,
               onPressed: () {
                 final taskName = widget.taskData['taskName'];
-                final date = widget.taskData['date']
-                    ?.toDate(); // Convert Timestamp to DateTime if necessary
-                _deleteTask(taskName, date); // Pass both taskName and date
+
+                _deleteTask(taskName);
+
                 Navigator.pop(context);
                 Navigator.pop(
                     context); // Pop twice to go back to the previous screen
@@ -6211,19 +6240,23 @@ class _TaskPageState extends State<TaskPage> {
     );
   }
 
-  void _deleteTask(String taskName, DateTime date) {
+  Future<void> _deleteTask(String taskName) async {
     final box = Hive.box('tasks');
-    final taskId = _generateTaskId(taskName, date);
+    final taskIndex =
+        box.values.toList().indexWhere((task) => task['taskName'] == taskName);
 
-    if (box.containsKey(taskId)) {
-      box.delete(taskId);
+    if (taskIndex != -1) {
+      await box.deleteAt(taskIndex);
+    }
 
-      // You may also want to delete the task from Firestore if it exists there
-      final firestore = FirebaseFirestore.instance;
-      final taskDocRef = firestore.collection('tasks').doc(taskId);
-      taskDocRef.delete();
-    } else {
-      print('Task with taskName not found in Hive: $taskName');
+    // Also delete the task from Firestore if needed
+    final taskQuery = await FirebaseFirestore.instance
+        .collection('tasks')
+        .where('taskName', isEqualTo: taskName)
+        .get();
+
+    for (final doc in taskQuery.docs) {
+      await doc.reference.delete();
     }
   }
 
@@ -6296,6 +6329,15 @@ class _TaskPageState extends State<TaskPage> {
                               ),
                               const SizedBox(width: 10.0),
                               const Text('Date'),
+                              const SizedBox(width: 10.0),
+                              Text(
+                                _showDatePicker
+                                    ? _formatSelectedDate(_selectedDate)
+                                    : '',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               const Spacer(),
                               CupertinoSwitch(
                                 value: _showDatePicker,
@@ -6315,27 +6357,6 @@ class _TaskPageState extends State<TaskPage> {
                           Column(
                             children: [
                               const Divider(),
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _showDatePicker = false;
-                                  });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(15.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        _formatSelectedDate(_selectedDate),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
                               Container(
                                 height: 200.0,
                                 child: CupertinoDatePicker(
@@ -6368,6 +6389,15 @@ class _TaskPageState extends State<TaskPage> {
                               ),
                               const SizedBox(width: 10.0),
                               const Text('Time'),
+                              const SizedBox(width: 10.0),
+                              Text(
+                                _showTimePicker
+                                    ? _formatSelectedTime(_selectedTime)
+                                    : '',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               const Spacer(),
                               CupertinoSwitch(
                                 value: _showTimePicker,
@@ -6387,27 +6417,6 @@ class _TaskPageState extends State<TaskPage> {
                           Column(
                             children: [
                               const Divider(),
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _showTimePicker = false;
-                                  });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(15.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        _formatSelectedTime(_selectedTime),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
                               Container(
                                 height: 200.0,
                                 child: CupertinoTimerPicker(
@@ -6425,11 +6434,33 @@ class _TaskPageState extends State<TaskPage> {
                                   },
                                 ),
                               ),
+                              if (_showTimePicker && _selectedTime != null)
+                                Padding(
+                                  padding: const EdgeInsets.all(15.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        CupertinoIcons.clock_fill,
+                                        color: Colors.blueAccent,
+                                      ),
+                                      const SizedBox(width: 10.0),
+                                      Text(
+                                        _formatSelectedTime(_selectedTime),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                             ],
                           ),
                       ],
                     ),
                   ),
+
+                  //Early reminders
                   const SizedBox(height: 20.0),
                   Card(
                     shape: RoundedRectangleBorder(
@@ -6455,10 +6486,51 @@ class _TaskPageState extends State<TaskPage> {
                               const SizedBox(width: 10.0),
                               const Text('Early Reminder'),
                               const Spacer(),
-                              const Text('Never'),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _showReminderPicker = !_showReminderPicker;
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      _reminderMap[
+                                              _selectedReminder.toString()] ??
+                                          '',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Icon(
+                                      _showReminderPicker
+                                          ? CupertinoIcons.chevron_up
+                                          : CupertinoIcons.chevron_down,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
+                        if (_showReminderPicker) ...[
+                          SizedBox(
+                            height: 200.0,
+                            child: CupertinoPicker(
+                              itemExtent: 32.0,
+                              onSelectedItemChanged: (index) {
+                                setState(() {
+                                  _selectedReminder =
+                                      ReminderOption.values[index];
+                                });
+                              },
+                              children: _reminderOptions
+                                  .map((option) => Text(option))
+                                  .toList(),
+                            ),
+                          ),
+                        ],
                         const Divider(),
                         Padding(
                           padding: const EdgeInsets.all(15.0),
@@ -6491,21 +6563,55 @@ class _TaskPageState extends State<TaskPage> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(15.0),
-                      child: Row(
+                      child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: Colors.pinkAccent,
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: const Icon(
-                              CupertinoIcons.square_stack_3d_down_dottedline,
-                              color: Colors.white,
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showFocusPicker = !_showFocusPicker;
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.pinkAccent,
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  child: const Icon(
+                                    CupertinoIcons
+                                        .square_stack_3d_down_dottedline,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 10.0),
+                                const Text('Focus'),
+                                const Spacer(),
+                                Icon(
+                                  CupertinoIcons.chevron_down,
+                                  color: _showFocusPicker
+                                      ? Colors.blue
+                                      : Colors.grey,
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 10.0),
-                          const Text('Focus'),
+                          AnimatedContainer(
+                            height: _showFocusPicker ? 100.0 : 0.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: CupertinoPicker(
+                              itemExtent: 32.0,
+                              onSelectedItemChanged: (index) {
+                                setState(() {
+                                  _selectedFocus = FocusOption.values[index];
+                                });
+                              },
+                              children: _focusOptions
+                                  .map((option) => Text(option))
+                                  .toList(),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -6539,7 +6645,8 @@ class _TaskPageState extends State<TaskPage> {
     );
   }
 }
-
+//try fixing more
+/*
 class DetailsPage extends StatefulWidget {
   const DetailsPage({super.key});
 
@@ -6558,7 +6665,8 @@ class _DetailsPageState extends State<DetailsPage> {
   TimeOfDay? _selectedTime; // Added variable
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  String _selectedFocus = 'None';
+  String _selectedReminder = 'Never';
   Future<void> _initializeHive() async {
     await Hive.initFlutter();
     await Hive.openBox('tasks');
@@ -6574,24 +6682,28 @@ class _DetailsPageState extends State<DetailsPage> {
     FocusScope.of(context).unfocus();
   }
 
-  void _saveToFirestore(
-      String taskName, String notes, DateTime? date, TimeOfDay? time) {
+  void _saveToFirestore(String taskName, String notes, DateTime? date,
+      TimeOfDay? time, String focus, String reminder) {
     _firestore.collection('tasks').add({
       'taskName': taskName,
       'notes': notes,
       'date': date != null ? Timestamp.fromDate(date) : null,
       'time': time != null ? DateTime(0, 0, 0, time.hour, time.minute) : null,
+      'focus': focus,
+      'reminder': reminder,
     });
   }
 
-  void _saveToHive(
-      String taskName, String notes, DateTime? date, TimeOfDay? time) async {
+  void _saveToHive(String taskName, String notes, DateTime? date,
+      TimeOfDay? time, String focus, String reminder) async {
     final box = Hive.box('tasks');
     box.add({
       'taskName': taskName,
       'notes': notes,
       'date': date,
       'time': time != null ? DateTime(0, 0, 0, time.hour, time.minute) : null,
+      'focus': focus,
+      'reminder': reminder,
     });
   }
 
@@ -6625,10 +6737,10 @@ class _DetailsPageState extends State<DetailsPage> {
                           String taskName = _taskNameController.text;
                           String notes = _notesController.text;
 
-                          _saveToFirestore(
-                              taskName, notes, _selectedDate, _selectedTime);
-                          _saveToHive(
-                              taskName, notes, _selectedDate, _selectedTime);
+                          _saveToFirestore(taskName, notes, _selectedDate,
+                              _selectedTime, _selectedFocus, _selectedReminder);
+                          _saveToHive(taskName, notes, _selectedDate,
+                              _selectedTime, _selectedFocus, _selectedReminder);
 
                           Navigator.of(context).pop();
                         },
@@ -6842,6 +6954,469 @@ class _DetailsPageState extends State<DetailsPage> {
                           ),
                           const SizedBox(width: 10.0),
                           const Text('Focus'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+*/
+
+//fix made
+
+enum FocusOption {
+  none,
+  reading,
+  fitness,
+  work,
+  mindfulness,
+}
+
+enum ReminderOption {
+  never,
+  oneMinuteBefore,
+  fiveMinutesBefore,
+  tenMinutesBefore,
+}
+
+Map<ReminderOption, String> reminderOptionMap = {
+  ReminderOption.never: "Never",
+  ReminderOption.oneMinuteBefore: "1 minute before",
+  ReminderOption.fiveMinutesBefore: "5 minutes before",
+  ReminderOption.tenMinutesBefore: "10 minutes before",
+};
+
+class DetailsPage extends StatefulWidget {
+  const DetailsPage({Key? key}) : super(key: key);
+
+  @override
+  _DetailsPageState createState() => _DetailsPageState();
+}
+
+class _DetailsPageState extends State<DetailsPage> {
+  bool _showDatePicker = false;
+  bool _showTimePicker = false;
+
+  final _taskNameController = TextEditingController(text: 'Task name');
+  final _notesController = TextEditingController(text: 'Notes');
+
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+
+  bool _showFocusPicker = false;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  FocusOption _selectedFocus = FocusOption.none;
+  ReminderOption _selectedReminder = ReminderOption.never;
+
+  bool _showReminderPicker = false; // Added variable
+
+  List<String> _reminderOptions = [
+    'Never',
+    '5 minutes before',
+    '15 minutes before',
+    '30 minutes before',
+    '1 hour before',
+  ];
+
+  Map<String, String> _reminderMap = {
+    'Never': 'Never',
+    '5 minutes before': '5 min before',
+    '15 minutes before': '15 min before',
+    '30 minutes before': '30 min before',
+    '1 hour before': '1 hour before',
+  };
+
+  List<String> _focusOptions = [
+    'None',
+    'Reading',
+    'Fitness',
+    'Work',
+    'Mindfulness',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeHive();
+    _checkAndAddNewFocusOptions();
+  }
+
+  Future<void> _checkAndAddNewFocusOptions() async {
+    QuerySnapshot focusOptionsSnapshot =
+        await _firestore.collection('focusOptions').get();
+    List<String> newFocusOptions = focusOptionsSnapshot.docs
+        .map((doc) => doc['option'] as String)
+        .toList();
+
+    for (String newOption in newFocusOptions) {
+      if (!_focusOptions.contains(newOption)) {
+        setState(() {
+          _focusOptions.add(newOption);
+        });
+      }
+    }
+  }
+
+  Future<void> _initializeHive() async {
+    await Hive.initFlutter();
+    await Hive.openBox('tasks');
+  }
+
+  void _unfocus() {
+    FocusScope.of(context).unfocus();
+  }
+
+  void _saveToFirestore(
+      String taskName, String notes, DateTime? date, TimeOfDay? time) {
+    _firestore.collection('tasks').add({
+      'taskName': taskName,
+      'notes': notes,
+      'date': date != null ? Timestamp.fromDate(date) : null,
+      'time': time != null ? DateTime(0, 0, 0, time.hour, time.minute) : null,
+      'focus': _selectedFocus.toString().split('.').last,
+      'reminder': _selectedReminder.toString().split('.').last,
+    });
+  }
+
+  void _saveToHive(
+      String taskName, String notes, DateTime? date, TimeOfDay? time) async {
+    final box = Hive.box('tasks');
+    box.add({
+      'taskName': taskName,
+      'notes': notes,
+      'date': date,
+      'time': time != null ? DateTime(0, 0, 0, time.hour, time.minute) : null,
+      'focus': _selectedFocus.toString().split('.').last,
+      'reminder': _selectedReminder.toString().split('.').last,
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _unfocus,
+      child: Scaffold(
+        body: CupertinoScrollbar(
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 40.0),
+                  // Buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        child: const Text('Cancel'),
+                        onPressed: () {
+                          // Cancel logic
+                        },
+                      ),
+                      const Text('Details', style: TextStyle(fontSize: 18.0)),
+                      CupertinoButton(
+                        child: const Text('Done'),
+                        onPressed: () {
+                          String taskName = _taskNameController.text;
+                          String notes = _notesController.text;
+
+                          _saveToFirestore(
+                              taskName, notes, _selectedDate, _selectedTime);
+                          _saveToHive(
+                              taskName, notes, _selectedDate, _selectedTime);
+
+                          Navigator.of(context).pop();
+                        },
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 30.0),
+                  // Task Name/Notes Card
+                  Card(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: CupertinoTextField(
+                            controller: _taskNameController,
+                            placeholder: 'Task name',
+                            onTap: () {
+                              _taskNameController.clear();
+                            },
+                          ),
+                        ),
+                        const Divider(),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: CupertinoTextField(
+                            controller: _notesController,
+                            placeholder: 'Notes',
+                            onTap: () {
+                              _notesController.clear();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 30.0),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: const Icon(
+                                  CupertinoIcons.calendar_badge_plus,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 10.0),
+                              const Text('Date'),
+                              const Spacer(),
+                              CupertinoSwitch(
+                                value: _showDatePicker,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _showDatePicker = val;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_showDatePicker)
+                          Container(
+                            height: 200.0,
+                            child: CupertinoDatePicker(
+                              mode: CupertinoDatePickerMode.date,
+                              onDateTimeChanged: (val) {
+                                setState(() {
+                                  _selectedDate = val;
+                                });
+                              },
+                            ),
+                          ),
+                        const Divider(),
+                        Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.blueAccent,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: const Icon(
+                                  CupertinoIcons.clock_fill,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 10.0),
+                              const Text('Time'),
+                              const Spacer(),
+                              CupertinoSwitch(
+                                value: _showTimePicker,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _showTimePicker = val;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_showTimePicker)
+                          Container(
+                            height: 200.0,
+                            child: CupertinoTimerPicker(
+                              mode: CupertinoTimerPickerMode.hm,
+                              minuteInterval: 1,
+                              onTimerDurationChanged: (val) {
+                                setState(() {
+                                  _selectedTime = TimeOfDay.fromDateTime(
+                                      DateTime(0, 0, 0).add(val));
+                                });
+                              },
+                            ),
+                          )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20.0),
+                  //fix 1
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.deepPurpleAccent,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: const Icon(
+                                  CupertinoIcons.bell_fill,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 10.0),
+                              const Text('Early Reminder'),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _showReminderPicker = !_showReminderPicker;
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      _reminderMap[
+                                              _selectedReminder.toString()] ??
+                                          '',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Icon(
+                                      _showReminderPicker
+                                          ? CupertinoIcons.chevron_up
+                                          : CupertinoIcons.chevron_down,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_showReminderPicker) ...[
+                          SizedBox(
+                            height: 200.0,
+                            child: CupertinoPicker(
+                              itemExtent: 32.0,
+                              onSelectedItemChanged: (index) {
+                                setState(() {
+                                  _selectedReminder =
+                                      ReminderOption.values[index];
+                                });
+                              },
+                              children: _reminderOptions
+                                  .map((option) => Text(option))
+                                  .toList(),
+                            ),
+                          ),
+                        ],
+                        const Divider(),
+                        Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.blueGrey,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: const Icon(
+                                  CupertinoIcons.repeat,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 10.0),
+                              const Text('Repeat'),
+                              const Spacer(),
+                              const Text('Never'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+//above should be fixed
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _showFocusPicker = !_showFocusPicker;
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.pinkAccent,
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  child: const Icon(
+                                    CupertinoIcons
+                                        .square_stack_3d_down_dottedline,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 10.0),
+                                const Text('Focus'),
+                                const Spacer(),
+                                Icon(
+                                  CupertinoIcons.chevron_down,
+                                  color: _showFocusPicker
+                                      ? Colors.blue
+                                      : Colors.grey,
+                                ),
+                              ],
+                            ),
+                          ),
+                          AnimatedContainer(
+                            height: _showFocusPicker ? 100.0 : 0.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: CupertinoPicker(
+                              itemExtent: 32.0,
+                              onSelectedItemChanged: (index) {
+                                setState(() {
+                                  _selectedFocus = FocusOption.values[index];
+                                });
+                              },
+                              children: _focusOptions
+                                  .map((option) => Text(option))
+                                  .toList(),
+                            ),
+                          ),
                         ],
                       ),
                     ),

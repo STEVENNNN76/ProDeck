@@ -45,9 +45,9 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       //home: StopwatchApp(),
       // home: StatisticsPage(),
-      //home: SplashScreen(),
+      home: SplashScreen(),
       //home: DeleteBoxesPage(),
-      home: TaskList(),
+      //home: TaskList(),
       //home: DetailsPage()
       //home: CalenderView(),
       //home: MyHomePage(),
