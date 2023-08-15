@@ -6024,17 +6024,20 @@ class _TaskPageState extends State<TaskPage> {
     return GestureDetector(
       onTap: _unfocus,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Task Details'),
-          actions: [
-            GestureDetector(
-              onTap: _showDeleteConfirmationDialog,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Icon(CupertinoIcons.ellipsis),
-              ),
+        appBar: CupertinoNavigationBar(
+          leading: CupertinoNavigationBarBackButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          middle: const Text('Task Details'),
+          trailing: GestureDetector(
+            onTap: _showDeleteConfirmationDialog,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Icon(CupertinoIcons.ellipsis),
             ),
-          ],
+          ),
         ),
         body: CupertinoScrollbar(
           child: SingleChildScrollView(
@@ -6092,15 +6095,21 @@ class _TaskPageState extends State<TaskPage> {
                                   ),
                                 ),
                                 const SizedBox(width: 10.0),
-                                const Text('Date'),
-                                const SizedBox(width: 10.0),
-                                Text(
-                                  _showDatePicker
-                                      ? _formatSelectedDate(_selectedDate)
-                                      : '',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Date'),
+                                    const SizedBox(
+                                        height: 2), // Space between lines
+                                    Text(
+                                      _selectedDate != null
+                                          ? DateFormat('yyyy-MM-dd')
+                                              .format(_selectedDate!)
+                                          : '', // Format and display the selected date, or leave it blank
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ],
                                 ),
                                 const Spacer(),
                                 CupertinoSwitch(
@@ -6149,15 +6158,20 @@ class _TaskPageState extends State<TaskPage> {
                                   ),
                                 ),
                                 const SizedBox(width: 10.0),
-                                const Text('Time'),
-                                const SizedBox(width: 10.0),
-                                Text(
-                                  _showTimePicker
-                                      ? _formatSelectedTime(_selectedTime)
-                                      : '',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Time'),
+                                    const SizedBox(
+                                        height: 2), // Space between lines
+                                    Text(
+                                      _selectedTime != null
+                                          ? _selectedTime!.format(context)
+                                          : '', // Format and display the selected time, or leave it blank
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ],
                                 ),
                                 const Spacer(),
                                 CupertinoSwitch(
@@ -6253,7 +6267,7 @@ class _TaskPageState extends State<TaskPage> {
                                   const SizedBox(
                                       height: 2), // Space between lines
                                   Text(
-                                    'Selected Reminder: ${reminderOptionMap[_selectedReminder] ?? ""}',
+                                    '${reminderOptionMap[_selectedReminder] ?? ""}',
                                     style: const TextStyle(
                                         fontSize: 12, color: Colors.grey),
                                   ),
@@ -6527,14 +6541,30 @@ class _DetailsPageState extends State<DetailsPage> {
     FocusScope.of(context).unfocus();
   }
 
+//fix firestore date and time
+
   void _saveToFirestore(
       String taskName, String notes, DateTime? date, TimeOfDay? time) {
+    // Convert TimeOfDay to DateTime with the selected time
+    DateTime? selectedDateTime;
+    if (date != null && time != null) {
+      selectedDateTime = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+    }
+
     _firestore.collection('tasks').add({
       'taskName': taskName,
       'notes': notes,
-      'date': date != null ? Timestamp.fromDate(date) : null,
-      'time': time != null && date != null
-          ? DateTime(date.year, date.month, date.day, time.hour, time.minute)
+      'date': date != null
+          ? Timestamp.fromDate(DateTime(date.year, date.month, date.day))
+          : null,
+      'time': selectedDateTime != null
+          ? Timestamp.fromDate(selectedDateTime)
           : null,
       'focus': _selectedFocus.toString().split('.').last,
       'reminder': _selectedReminder.toString().split('.').last,
@@ -6681,15 +6711,21 @@ class _DetailsPageState extends State<DetailsPage> {
                                   ),
                                 ),
                                 const SizedBox(width: 10.0),
-                                const Text('Date'),
-                                const SizedBox(width: 10.0),
-                                Text(
-                                  _showDatePicker
-                                      ? _formatSelectedDate(_selectedDate)
-                                      : '',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Date'),
+                                    const SizedBox(
+                                        height: 2), // Space between lines
+                                    Text(
+                                      _selectedDate != null
+                                          ? DateFormat('yyyy-MM-dd')
+                                              .format(_selectedDate!)
+                                          : '', // Format and display the selected date, or leave it blank
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ],
                                 ),
                                 const Spacer(),
                                 CupertinoSwitch(
@@ -6738,15 +6774,20 @@ class _DetailsPageState extends State<DetailsPage> {
                                   ),
                                 ),
                                 const SizedBox(width: 10.0),
-                                const Text('Time'),
-                                const SizedBox(width: 10.0),
-                                Text(
-                                  _showTimePicker
-                                      ? _formatSelectedTime(_selectedTime)
-                                      : '',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Time'),
+                                    const SizedBox(
+                                        height: 2), // Space between lines
+                                    Text(
+                                      _selectedTime != null
+                                          ? _selectedTime!.format(context)
+                                          : '', // Format and display the selected time, or leave it blank
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ],
                                 ),
                                 const Spacer(),
                                 CupertinoSwitch(
@@ -6784,27 +6825,6 @@ class _DetailsPageState extends State<DetailsPage> {
                                     },
                                   ),
                                 ),
-                                if (_showTimePicker && _selectedTime != null)
-                                  Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(
-                                          CupertinoIcons.clock_fill,
-                                          color: Colors.blueAccent,
-                                        ),
-                                        const SizedBox(width: 10.0),
-                                        Text(
-                                          _formatSelectedTime(_selectedTime),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
                               ],
                             ),
                         ],
