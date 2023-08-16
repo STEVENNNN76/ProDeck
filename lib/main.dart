@@ -46,6 +46,7 @@ class MyApp extends StatelessWidget {
       //home: StopwatchApp(),
       // home: StatisticsPage(),
       home: SplashScreen(),
+
       //home: DeleteBoxesPage(),
       //home: TaskList(),
       //home: DetailsPage()

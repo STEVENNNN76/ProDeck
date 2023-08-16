@@ -1063,6 +1063,9 @@ class _TimerScreenState extends State<TimerScreen> {
 */
 
 //fix 3
+
+//dynamic isladn timer
+
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

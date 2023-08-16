@@ -1329,7 +1329,11 @@ class _ModePageState extends State<ModePage> {
       'text': 'Work',
     },
   ];
-  Widget _buildPredefinedCard(int index) {
+  static int parseUnicode(String unicode) {
+    return int.parse(unicode.replaceFirst('U+', ''), radix: 16);
+  }
+  /*
+  Widget _buildPredefinedCard(int index) { //trying to make a fix
     // Predefined modes
     final predefinedModes = [
       {
@@ -1465,8 +1469,71 @@ class _ModePageState extends State<ModePage> {
       }
     }
   }
-
+*/
 //try create cards
+//user fedined cards work now
+
+  Widget _buildPredefinedCard(int index) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('focus').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const CircularProgressIndicator(); // Loading indicator
+        }
+
+        final focusDocs = snapshot.data!.docs;
+
+        if (index < focusDocs.length) {
+          final focusData = focusDocs[index].data() as Map<String, dynamic>;
+          final name = focusData['name'] as String;
+
+          return _buildFocusCard(Icons.star, Colors.blue,
+              name); // Replace with appropriate icon and color
+        } else {
+          return Container(); // Return an empty container if index is out of range
+        }
+      },
+    );
+  }
+
+//test
+  Widget _buildFocusCard(IconData icon, Color color, String text) {
+    return Container(
+      width: 175,
+      height: 75,
+      margin: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15.0),
+        color: Colors.white,
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 5),
+          CircleAvatar(
+            backgroundColor: color.withOpacity(0.3),
+            child: Icon(
+              icon,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Center(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1642,6 +1709,47 @@ class CreateFocusScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+//to implment focus data group
+class FocusDetailScreen extends StatelessWidget {
+  final String focusName;
+
+  FocusDetailScreen({required this.focusName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Tasks for $focusName')),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('Tasks')
+            .where('focus', isEqualTo: focusName)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularProgressIndicator();
+          }
+
+          final tasks = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: tasks.length,
+            itemBuilder: (context, index) {
+              final taskData = tasks[index].data() as Map<String, dynamic>;
+              final taskName = taskData['taskName'];
+              // ... (other task-related data)
+
+              return ListTile(
+                title: Text(taskName),
+                // ... (other task widgets)
+              );
+            },
+          );
+        },
       ),
     );
   }
