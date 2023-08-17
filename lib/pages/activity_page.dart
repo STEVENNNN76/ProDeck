@@ -2784,6 +2784,74 @@ class ActivityPage extends StatelessWidget {
 
   const ActivityPage({Key? key}) : super(key: key);
 
+  Future<void> scheduleTaskNotifications() async {
+    final currentDate = DateTime.now();
+
+    final tasksSnapshot = await FirebaseFirestore.instance
+        .collection('tasks')
+        .where('time', isGreaterThanOrEqualTo: Timestamp.fromDate(currentDate))
+        .get();
+
+    tasksSnapshot.docs.forEach((taskDoc) {
+      final task = taskDoc.data() as Map<String, dynamic>;
+      final taskName = task['taskName'] ?? '';
+      final time = (task['time'] as Timestamp).toDate();
+
+      if (time.isBefore(DateTime.now())) {
+        // Time has already passed, skip this task
+        return;
+      }
+
+      final notificationTitle = 'ProDeck';
+
+      final oneMinuteBefore = time.subtract(Duration(minutes: 1));
+      final fiveMinutesBefore = time.subtract(Duration(minutes: 5));
+      final tenMinutesBefore = time.subtract(Duration(minutes: 10));
+
+      if (DateTime.now().isBefore(tenMinutesBefore)) {
+        scheduleNotification(notificationTitle, taskName, tenMinutesBefore);
+      }
+
+      if (DateTime.now().isBefore(fiveMinutesBefore)) {
+        scheduleNotification(notificationTitle, taskName, fiveMinutesBefore);
+      }
+
+      if (DateTime.now().isBefore(oneMinuteBefore)) {
+        scheduleNotification(notificationTitle, taskName, oneMinuteBefore);
+      }
+
+      // Condition for sending notification at the exact set time
+      if (DateTime.now().isAtSameMomentAs(time)) {
+        scheduleStartNotification(notificationTitle, taskName);
+      }
+    });
+  }
+
+  void scheduleNotification(
+      String notificationTitle, String taskName, DateTime scheduledTime) {
+    final formattedScheduledTime = DateFormat('HH:mm').format(scheduledTime);
+    final notificationBody =
+        'You have ${scheduledTime.difference(DateTime.now()).inMinutes} minutes to start the $taskName task at $formattedScheduledTime';
+
+    print('Showing notification for task: $taskName');
+    NotificationService().showNotification(
+      title: notificationTitle,
+      body: notificationBody,
+    );
+  }
+
+  void scheduleStartNotification(String notificationTitle, String taskName) {
+    final formattedScheduledTime = DateFormat('HH:mm').format(DateTime.now());
+    final notificationBody =
+        'Let\'s start the $taskName task at $formattedScheduledTime';
+
+    print('Showing start notification for task: $taskName');
+    NotificationService().showNotification(
+      title: notificationTitle,
+      body: notificationBody,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2922,7 +2990,7 @@ class ActivityPage extends StatelessWidget {
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     final tasks = snapshot.data!.docs;
-
+                    scheduleTaskNotifications(); // Call the function when the page is built
                     final currentDate = DateTime.now(); // Get the current date
 
                     final filteredTasks = tasks.where((taskDoc) {
@@ -2985,7 +3053,7 @@ class ActivityPage extends StatelessWidget {
                             child: Card(
                               child: Container(
                                 width: 390.0,
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 15.0, vertical: 10.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2993,22 +3061,23 @@ class ActivityPage extends StatelessWidget {
                                     Row(
                                       children: [
                                         // Focus icon moved by 10px
-                                        SizedBox(width: 10.0),
+                                        const SizedBox(width: 10.0),
                                         if (focusIcon != null)
                                           Icon(focusIcon,
                                               color: focusFontColor, size: 30),
-                                        SizedBox(width: 10.0),
+                                        const SizedBox(width: 10.0),
                                         // Task name with bold font
                                         Text(
                                           taskName,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontWeight: FontWeight.bold),
                                         ),
-                                        Spacer(), // Spacing to separate focus and play button
+                                        const Spacer(), // Spacing to separate focus and play button
                                         // Cupertino play button in the middle
                                         CupertinoButton(
                                           padding: EdgeInsets.zero,
-                                          child: Icon(CupertinoIcons.play_fill,
+                                          child: const Icon(
+                                              CupertinoIcons.play_fill,
                                               size: 30),
                                           onPressed: () {
                                             Navigator.push(
@@ -3023,7 +3092,7 @@ class ActivityPage extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                         height:
                                             3.0), // Space between task name and focus card
                                     // Focus card
@@ -3031,7 +3100,8 @@ class ActivityPage extends StatelessWidget {
                                       Container(
                                         width: 90.0,
                                         height: 25.0,
-                                        margin: EdgeInsets.only(left: 20.0),
+                                        margin:
+                                            const EdgeInsets.only(left: 20.0),
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
                                           color: focusCardColor,
@@ -3068,6 +3138,7 @@ class ActivityPage extends StatelessWidget {
     );
   }
 }
+
 // timer screen best working
 
 class TimerScreen extends StatefulWidget {
@@ -3151,7 +3222,7 @@ class _TimerScreenState extends State<TimerScreen> {
           timer.cancel();
           _isStarted = false;
         } else {
-          _elapsedDuration = _elapsedDuration + Duration(seconds: 1);
+          _elapsedDuration = _elapsedDuration + const Duration(seconds: 1);
 
           if (!_isPaused) {
             _percentComplete = (_elapsedDuration.inSeconds + pausedSeconds) /
