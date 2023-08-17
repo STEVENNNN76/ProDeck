@@ -2842,8 +2842,7 @@ class ActivityPage extends StatelessWidget {
 
   void scheduleStartNotification(String notificationTitle, String taskName) {
     final formattedScheduledTime = DateFormat('HH:mm').format(DateTime.now());
-    final notificationBody =
-        'Let\'s start the $taskName task at $formattedScheduledTime';
+    final notificationBody = 'Let\'s start $taskName';
 
     print('Showing start notification for task: $taskName');
     NotificationService().showNotification(
