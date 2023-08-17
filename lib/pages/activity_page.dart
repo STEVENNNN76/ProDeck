@@ -2922,15 +2922,52 @@ class ActivityPage extends StatelessWidget {
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     final tasks = snapshot.data!.docs;
+
+                    final currentDate = DateTime.now(); // Get the current date
+
+                    final filteredTasks = tasks.where((taskDoc) {
+                      final task = taskDoc.data() as Map<String, dynamic>;
+                      final taskDateTimestamp = task['date'] as Timestamp?;
+                      if (taskDateTimestamp != null) {
+                        final taskDate = taskDateTimestamp.toDate();
+                        return taskDate.year == currentDate.year &&
+                            taskDate.month == currentDate.month &&
+                            taskDate.day == currentDate.day;
+                      }
+                      return false;
+                    }).toList();
+
                     return ListView.builder(
-                      itemCount: tasks.length,
+                      itemCount: filteredTasks.length,
                       itemBuilder: (context, index) {
                         final task =
-                            tasks[index].data() as Map<String, dynamic>;
-                        final taskName = task['name'] ?? '';
+                            filteredTasks[index].data() as Map<String, dynamic>;
+                        final taskName = task['taskName'] ?? '';
+                        final focus = task['focus'] ?? '';
 
-                        // Debug print to see the retrieved taskName
-                        print('Task Name: $taskName');
+                        // Determine the icon, font color, and card color based on the focus
+                        IconData? focusIcon;
+                        Color? focusFontColor;
+                        Color? focusCardColor;
+
+                        if (focus == 'reading') {
+                          focusIcon = CupertinoIcons.book_fill;
+                          focusFontColor =
+                              Colors.orange[800]; // Darker shade of orange
+                          focusCardColor = Colors.orange[100];
+                        } else if (focus == 'fitness') {
+                          focusIcon = CupertinoIcons.book_fill;
+                          focusFontColor = Colors.green;
+                          focusCardColor = Colors.green[100];
+                        } else if (focus == 'mindfulness') {
+                          focusIcon = CupertinoIcons.circle_grid_hex;
+                          focusFontColor = Colors.blue;
+                          focusCardColor = Colors.blue[100];
+                        } else if (focus == 'work') {
+                          focusIcon = CupertinoIcons.desktopcomputer;
+                          focusFontColor = Colors.red;
+                          focusCardColor = Colors.red[100];
+                        }
 
                         return GestureDetector(
                           onTap: () {
@@ -2946,17 +2983,67 @@ class ActivityPage extends StatelessWidget {
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 20.0),
                             child: Card(
-                              child: ListTile(
-                                title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                              child: Container(
+                                width: 390.0,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 15.0, vertical: 10.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(taskName),
-                                    const Icon(
-                                      arrowtriangleRightFill,
-                                      size: 25.0,
-                                      color: CupertinoColors.systemGrey,
+                                    Row(
+                                      children: [
+                                        // Focus icon moved by 10px
+                                        SizedBox(width: 10.0),
+                                        if (focusIcon != null)
+                                          Icon(focusIcon,
+                                              color: focusFontColor, size: 30),
+                                        SizedBox(width: 10.0),
+                                        // Task name with bold font
+                                        Text(
+                                          taskName,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Spacer(), // Spacing to separate focus and play button
+                                        // Cupertino play button in the middle
+                                        CupertinoButton(
+                                          padding: EdgeInsets.zero,
+                                          child: Icon(CupertinoIcons.play_fill,
+                                              size: 30),
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              CupertinoPageRoute(
+                                                builder: (context) =>
+                                                    TimerScreen(
+                                                        taskName: taskName),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
                                     ),
+                                    SizedBox(
+                                        height:
+                                            3.0), // Space between task name and focus card
+                                    // Focus card
+                                    if (focus != null && focus.isNotEmpty)
+                                      Container(
+                                        width: 90.0,
+                                        height: 25.0,
+                                        margin: EdgeInsets.only(left: 20.0),
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: focusCardColor,
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                        ),
+                                        child: Text(
+                                          focus,
+                                          style:
+                                              TextStyle(color: focusFontColor),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -3138,13 +3225,41 @@ class _TimerScreenState extends State<TimerScreen> {
             Positioned(
               top: 20,
               left: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CupertinoButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    padding: const EdgeInsets.all(10),
+                    child: const Icon(
+                      CupertinoIcons.back,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(
+                      height: 10), // Spacer between Back Button and Timer Text
+                  const Text(
+                    'Timer', // Your Timer Text here
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 20,
+              right: 20,
               child: CupertinoButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  // Add your action here for the timer icon click
                 },
                 padding: const EdgeInsets.all(10),
                 child: const Icon(
-                  CupertinoIcons.back,
+                  CupertinoIcons.timer,
                   size: 28,
                 ),
               ),
@@ -3235,6 +3350,7 @@ class _TimerScreenState extends State<TimerScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 150),
                 ],
               ),
             ),
@@ -3244,6 +3360,9 @@ class _TimerScreenState extends State<TimerScreen> {
     );
   }
 }
+
+
+
 
 /*
 class TimerScreen extends StatefulWidget {
