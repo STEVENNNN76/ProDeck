@@ -2277,6 +2277,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 //code 18
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -2428,7 +2429,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => TaskList(),
+                    builder: (context) => const TaskList(),
                   ),
                 );
               },
@@ -2530,7 +2531,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TaskList(),
+                        builder: (context) => const TaskList(),
                       ),
                     );
                   },
@@ -2574,7 +2575,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => StatisticsPage(),
+                        builder: (context) => const StatisticsPage(),
                       ),
                     );
                   },
@@ -2635,7 +2636,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              ModePage(), //name changed to focus
+                              const ModePage(), //name changed to focus
                         ),
                       );
                     },
@@ -2660,7 +2661,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ModePage(),
+                        builder: (context) => Reading(),
                       ),
                     );
                   },
@@ -2704,7 +2705,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TaskList(),
+                        builder: (context) => const Fitness(),
                       ),
                     );
                   },
@@ -2755,7 +2756,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TaskList(),
+                        builder: (context) => const Mindfullness(),
                       ),
                     );
                   },
@@ -2807,7 +2808,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TaskList(),
+                        builder: (context) => const work(),
                       ),
                     );
                   },
@@ -2856,6 +2857,659 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//focus
+//Reading
+class Reading extends StatefulWidget {
+  const Reading({super.key});
+
+  @override
+  _ReadingState createState() => _ReadingState();
+}
+
+class _ReadingState extends State<Reading> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CupertinoButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Icon(
+                    CupertinoIcons.back,
+                    size: 30,
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(left: 20, bottom: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Focus',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Reading', // Changed from 'Choose your Focus'
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('tasks')
+                    .where('focus', isEqualTo: 'reading')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                        snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.data == null) {
+                    return const Center(child: Text('No data available.'));
+                  }
+
+                  List<Widget> taskCards = snapshot.data!.docs
+                      .map((DocumentSnapshot<Map<String, dynamic>> document) {
+                    Map<String, dynamic>? taskData = document.data();
+                    if (taskData == null) {
+                      return const SizedBox(); // Skip rendering if data is null
+                    }
+
+                    // Safely access the fields using ?. operator
+                    String taskName = taskData['taskName'] as String? ?? '';
+                    String reminder = taskData['reminder'] as String? ?? '';
+
+                    // Convert 'date' Timestamp to a DateTime object and format it as a string
+                    Timestamp dateTimestamp = taskData['date'] as Timestamp? ??
+                        Timestamp(0, 0); // Provide a default value
+                    DateTime dateTime = dateTimestamp.toDate();
+                    String formattedDate = DateFormat.yMMMMd().format(dateTime);
+
+                    // Convert 'time' Timestamp to a DateTime object and format it as a string
+                    Timestamp timeTimestamp = taskData['time'] as Timestamp? ??
+                        Timestamp(0, 0); // Provide a default value
+                    DateTime timeDateTime = timeTimestamp.toDate();
+                    String formattedTime = DateFormat.Hm()
+                        .format(timeDateTime); // Example format "17:30"
+
+                    return Container(
+                      width: 390,
+                      height: 105,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            taskName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Reminder: $reminder',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            'Date: $formattedDate',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            'Time: $formattedTime',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList();
+
+                  return ListView(
+                    children: taskCards,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//Fitness
+class Fitness extends StatefulWidget {
+  const Fitness({super.key});
+
+  @override
+  _FitnessState createState() => _FitnessState();
+}
+
+class _FitnessState extends State<Fitness> {
+  // Change from `Reading` to `Fitness`
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CupertinoButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Icon(
+                    CupertinoIcons.back,
+                    size: 30,
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(left: 20, bottom: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Focus',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Fitness', // Changed from 'Choose your Focus'
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('tasks')
+                    .where('focus', isEqualTo: 'fitness')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                        snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.data == null) {
+                    return const Center(child: Text('No data available.'));
+                  }
+
+                  List<Widget> taskCards = snapshot.data!.docs
+                      .map((DocumentSnapshot<Map<String, dynamic>> document) {
+                    Map<String, dynamic>? taskData = document.data();
+                    if (taskData == null) {
+                      return const SizedBox(); // Skip rendering if data is null
+                    }
+
+                    // Safely access the fields using ?. operator
+                    String taskName = taskData['taskName'] as String? ?? '';
+                    String reminder = taskData['reminder'] as String? ?? '';
+
+                    // Convert 'date' Timestamp to a DateTime object and format it as a string
+                    Timestamp dateTimestamp = taskData['date'] as Timestamp? ??
+                        Timestamp(0, 0); // Provide a default value
+                    DateTime dateTime = dateTimestamp.toDate();
+                    String formattedDate = DateFormat.yMMMMd().format(dateTime);
+
+                    // Convert 'time' Timestamp to a DateTime object and format it as a string
+                    Timestamp timeTimestamp = taskData['time'] as Timestamp? ??
+                        Timestamp(0, 0); // Provide a default value
+                    DateTime timeDateTime = timeTimestamp.toDate();
+                    String formattedTime = DateFormat.Hm()
+                        .format(timeDateTime); // Example format "17:30"
+
+                    return Container(
+                      width: 390,
+                      height: 105,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            taskName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Reminder: $reminder',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            'Date: $formattedDate',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            'Time: $formattedTime',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList();
+
+                  return ListView(
+                    children: taskCards,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//Mindfullness
+class Mindfullness extends StatefulWidget {
+  const Mindfullness({super.key});
+
+  @override
+  _MindfullnessState createState() => _MindfullnessState();
+}
+
+class _MindfullnessState extends State<Mindfullness> {
+  // Change from `Reading` to `Fitness`
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CupertinoButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Icon(
+                    CupertinoIcons.back,
+                    size: 30,
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(left: 20, bottom: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Focus',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Mindfullness', // Changed from 'Choose your Focus'
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('tasks')
+                    .where('focus', isEqualTo: 'mindfullness')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                        snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.data == null) {
+                    return const Center(child: Text('No data available.'));
+                  }
+
+                  List<Widget> taskCards = snapshot.data!.docs
+                      .map((DocumentSnapshot<Map<String, dynamic>> document) {
+                    Map<String, dynamic>? taskData = document.data();
+                    if (taskData == null) {
+                      return const SizedBox(); // Skip rendering if data is null
+                    }
+
+                    // Safely access the fields using ?. operator
+                    String taskName = taskData['taskName'] as String? ?? '';
+                    String reminder = taskData['reminder'] as String? ?? '';
+
+                    // Convert 'date' Timestamp to a DateTime object and format it as a string
+                    Timestamp dateTimestamp = taskData['date'] as Timestamp? ??
+                        Timestamp(0, 0); // Provide a default value
+                    DateTime dateTime = dateTimestamp.toDate();
+                    String formattedDate = DateFormat.yMMMMd().format(dateTime);
+
+                    // Convert 'time' Timestamp to a DateTime object and format it as a string
+                    Timestamp timeTimestamp = taskData['time'] as Timestamp? ??
+                        Timestamp(0, 0); // Provide a default value
+                    DateTime timeDateTime = timeTimestamp.toDate();
+                    String formattedTime = DateFormat.Hm()
+                        .format(timeDateTime); // Example format "17:30"
+
+                    return Container(
+                      width: 390,
+                      height: 105,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            taskName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Reminder: $reminder',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            'Date: $formattedDate',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            'Time: $formattedTime',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList();
+
+                  return ListView(
+                    children: taskCards,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//work
+
+class work extends StatefulWidget {
+  const work({super.key});
+
+  @override
+  _workState createState() => _workState();
+}
+
+class _workState extends State<work> {
+  // Change from `Reading` to `Fitness`
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CupertinoButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Icon(
+                    CupertinoIcons.back,
+                    size: 30,
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(left: 20, bottom: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Focus',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'work', // Changed from 'Choose your Focus'
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('tasks')
+                    .where('focus', isEqualTo: 'mindfullness')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                        snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.data == null) {
+                    return const Center(child: Text('No data available.'));
+                  }
+
+                  List<Widget> taskCards = snapshot.data!.docs
+                      .map((DocumentSnapshot<Map<String, dynamic>> document) {
+                    Map<String, dynamic>? taskData = document.data();
+                    if (taskData == null) {
+                      return const SizedBox(); // Skip rendering if data is null
+                    }
+
+                    // Safely access the fields using ?. operator
+                    String taskName = taskData['taskName'] as String? ?? '';
+                    String reminder = taskData['reminder'] as String? ?? '';
+
+                    // Convert 'date' Timestamp to a DateTime object and format it as a string
+                    Timestamp dateTimestamp = taskData['date'] as Timestamp? ??
+                        Timestamp(0, 0); // Provide a default value
+                    DateTime dateTime = dateTimestamp.toDate();
+                    String formattedDate = DateFormat.yMMMMd().format(dateTime);
+
+                    // Convert 'time' Timestamp to a DateTime object and format it as a string
+                    Timestamp timeTimestamp = taskData['time'] as Timestamp? ??
+                        Timestamp(0, 0); // Provide a default value
+                    DateTime timeDateTime = timeTimestamp.toDate();
+                    String formattedTime = DateFormat.Hm()
+                        .format(timeDateTime); // Example format "17:30"
+
+                    return Container(
+                      width: 390,
+                      height: 105,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            taskName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Reminder: $reminder',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            'Date: $formattedDate',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            'Time: $formattedTime',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList();
+
+                  return ListView(
+                    children: taskCards,
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
