@@ -3,6 +3,8 @@
 ProDeck aims to empower individuals to become more productive by providing them with a comprehensive time management tool that encourages focused work and minimizes distraction. The primary goal is to help reduce procrastination tendencies. By breaking tasks into manageable intervals and enforcing breaks. Enables users to stay motivated and
 avoid delaying important work.
 
+The primary objective is to help the users effectively manage their time to optimize productivity. The app serves as a digital tool that enables users to track, monitor, and analyze
+their work progress, allowing them to make inforned decisions and improve efficiency.
 
 
 
